@@ -1,0 +1,12 @@
+build-env/
+__pycache__/
+test-tmp/
+build/
+dist/
+*.log
+*.sqlite*
+*.db
+.local-session-token
+.workspace-settings.json
+*.exe
+*.zip

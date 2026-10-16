@@ -1,0 +1,2 @@
+# Local Outlook reader (MIT); installed in vendor/ for the current prototype.
+python-oxmsg==0.0.2
