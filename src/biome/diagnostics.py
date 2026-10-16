@@ -17,15 +17,15 @@ def check_external(item):
         return {**item, 'state': 'unsupported', 'detail': 'Choisir un chemin complet pour vérifier cet emplacement'}
     try:
         result = subprocess.run(([sys.executable,'--probe-location'] if getattr(sys,'frozen',False) else [sys.executable, str(Path(__file__).with_name('check_location.py'))]),
-                                input=json.dumps({'location': location}), capture_output=True,
-                                text=True, encoding='utf-8', timeout=3,
+                                input=json.dumps({'location': location}).encode('ascii'), capture_output=True,
+                                timeout=3,
                                 creationflags=0x08000000 if sys.platform == 'win32' else 0)
         if result.returncode:
             raise ValueError('Probe failed')
         return {**item, **json.loads(result.stdout)}
     except subprocess.TimeoutExpired:
         return {**item, 'state': 'timeout', 'detail': 'Pas de réponse sous 3 secondes ; réessayer après connexion au réseau ou au VPN'}
-    except (OSError, ValueError):
+    except (OSError, ValueError, TypeError):
         return {**item, 'state': 'unavailable', 'detail': 'La vérification d’accès n’a pas pu aboutir'}
 
 

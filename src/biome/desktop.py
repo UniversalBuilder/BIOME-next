@@ -18,7 +18,7 @@ def main():
             if sys.stdin is None:sys.stdin=os.fdopen(msvcrt.open_osfhandle(ctypes.windll.kernel32.GetStdHandle(-10),os.O_RDONLY),'r',encoding='utf-8')
             if sys.stdout is None:sys.stdout=os.fdopen(msvcrt.open_osfhandle(ctypes.windll.kernel32.GetStdHandle(-11),os.O_WRONLY),'w',encoding='utf-8')
         from check_location import probe
-        print(json.dumps(probe(json.load(sys.stdin)['location']),ensure_ascii=False))
+        print(json.dumps(probe(json.load(sys.stdin)['location']),ensure_ascii=True))
         return 0
     parser=argparse.ArgumentParser()
     parser.add_argument('--state-dir',type=Path)

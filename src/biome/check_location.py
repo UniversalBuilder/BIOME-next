@@ -26,4 +26,4 @@ def probe(location):
 
 
 if __name__ == '__main__':
-    print(json.dumps(probe(json.load(sys.stdin)['location']), ensure_ascii=False))
+    print(json.dumps(probe(json.load(sys.stdin)['location']), ensure_ascii=True))

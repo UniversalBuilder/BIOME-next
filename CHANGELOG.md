@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fix external-access checks on Windows with legacy console encodings; preserve
+  Unicode paths and handle invalid probe responses without crashing.
+
 ## 3.0.0-alpha.1
 
 First source preview of the folder-based redesign, separate from BIOME 2.x.

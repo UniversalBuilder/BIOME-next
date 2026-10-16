@@ -1,5 +1,9 @@
 import base64
 import hashlib
+import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -88,6 +92,23 @@ class DiagnosticTest(unittest.TestCase):
         report = diagnose_catalog(self.catalog, check_locations=True)
         self.assertEqual(report['locations'][0]['state'], 'accessible')
         self.assertEqual(self.snapshot(), before)
+
+    def test_probe_with_windows_legacy_encoding_and_unicode_path(self):
+        present = self.catalog / 'échantillon-細胞.txt'
+        present.write_text('synthetic', encoding='utf-8')
+        environment = {**os.environ, 'PYTHONIOENCODING': 'cp1252', 'PYTHONUTF8': '0'}
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).with_name('check_location.py'))],
+            input=json.dumps({'location': str(present.resolve())}).encode('ascii'),
+            capture_output=True, env=environment, check=True)
+        result.stdout.decode('ascii')
+        self.assertEqual(json.loads(result.stdout)['detail'], 'Fichier présent et lisible')
+        item = {'project': 'test', 'name': 'unicode', 'location': str(present.resolve())}
+        with patch.dict(os.environ, environment):
+            self.assertEqual(check_external(item)['state'], 'accessible')
+        with patch('diagnostics.subprocess.run', return_value=subprocess.CompletedProcess(
+                args=[], returncode=0, stdout=b'{invalid}', stderr=b'\xe9')):
+            self.assertEqual(check_external(item)['state'], 'unavailable')
 
 
 if __name__ == '__main__':
