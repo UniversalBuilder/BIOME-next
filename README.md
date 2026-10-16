@@ -1,7 +1,28 @@
-# BIOME 3.0.0-alpha.1
+# BIOME-next 3.0.0-alpha.2
 
-Development preview of the folder-based BIOME redesign. This source snapshot is
-separate from legacy BIOME 2.x (React, SQLite and Tauri).
+BIOME-next is the actively developed successor to [legacy BIOME 2.x](https://github.com/UniversalBuilder/BIOME). It redesigns project management around readable documentary catalogues and separate original-image storage. The legacy repository preserves the old application and its history. This is a development preview, with a different data format; it is not an automatic upgrade or database migration.
+
+
+## Download and documentation
+
+- [Windows portable release — 3.0.0-alpha.2](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.2)
+- [Illustrated user guide (English)](docs/user-guide.md)
+- [Guide illustré complet (français)](docs/guide-utilisateur.fr.md)
+- [Release notes and limitations](docs/release-notes-3.0.0-alpha.2.md)
+- [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
+
+The Windows archive includes an offline HTML guide with screenshots. Extract
+the entire ZIP and launch `BIOME/BIOME.exe`; keep `_internal` beside it.
+The three fictional demo projects are installed from the Catalogue screen.
+The current application UI is French.
+
+![BIOME-next fictional project catalogue](docs/images/03-projects.jpg)
+
+## Typical workflow
+
+Request → project → retained originals → agreed scope → notebook and experiments
+→ frozen delivery → activity report. A short consultation can use a minimal
+record; script development can retain versioned files and multiple deliveries.
 
 ## Current scope
 
@@ -18,7 +39,7 @@ creating a project, or link it later. Back up the catalogue and original data
 separately.
 
 The current UI is French. Full internationalisation, English by default and
-optional JSON language packs are the next milestone, before a public release.
+optional JSON language packs remain planned for a future milestone.
 This preview is not presented as a finished English-language release.
 
 ## Build on Windows
@@ -50,18 +71,19 @@ developer credentials or a personal home directory.
 
 ## Version and data formats
 
-Application version: 3.0.0-alpha.1. Project format: 1.1 (reads 1.0 and 0.1-draft).
+Application version: 3.0.0-alpha.2. Project format: 1.1 (reads 1.0 and 0.1-draft).
 Catalogue identity format: 1. Application release versions are independent of
 project format versions. No implicit rewrite of existing project data is needed
 to read an older supported format.
 
 ## Publication status and licence
 
-This allowlisted snapshot excludes Git history, project catalogues, personal
-exports, screenshots, credentials, generated builds and dependency environments.
+The published source tree excludes legacy Git history, real project catalogues,
+personal exports, private screenshots, credentials, generated builds and dependency environments.
+Documentation screenshots use only the fictional demo.
 `source-manifest.json` records the included files and their SHA-256 hashes. This
 does not audit the history of any pre-existing repository.
 
 The existing CC BY-NC 4.0 licence is preserved in LICENSE. Public hosting and the
-choice of software licence are separate decisions. No GitHub repository,
-visibility setting, release or tag is created by this source-preparation tool.
+choice of software licence are separate decisions. This preview retains the
+existing licence and does not imply unrestricted commercial reuse.

@@ -1,9 +1,14 @@
 # Changelog
 
-## Unreleased
+## 3.0.0-alpha.2 — 2026-10-16
 
 - Fix external-access checks on Windows with legacy console encodings; preserve
   Unicode paths and handle invalid probe responses without crashing.
+
+- First Windows portable GitHub release with an installable fictional demo.
+- English and French illustrated offline guides with 23 actual demo screenshots.
+- Explicit succession from legacy BIOME 2.x.
+- Correct Windows build and folder-picker script syntax; validate scripts in CI.
 
 ## 3.0.0-alpha.1
 

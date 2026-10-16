@@ -1,4 +1,4 @@
-param([ValidateSet('file','folder')][string]$Kind = 'file', [ValidateSet('data','workspace','backup','restore','receive')][string]$Purpose = 'data')
+﻿param([ValidateSet('file','folder')][string]$Kind = 'file', [ValidateSet('data','workspace','backup','restore','receive')][string]$Purpose = 'data')
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 Add-Type @'
@@ -25,7 +25,7 @@ $owner.Activate()
 try {
     if ($Kind -eq 'folder') {
         $dialog = New-Object System.Windows.Forms.FolderBrowserDialog
-        $dialog.Description = if ($Purpose -eq 'workspace') { 'Choisir un catalogue BIOME ou son dossier parent selon l’action demandée' } elseif ($Purpose -eq 'backup') { 'Choisir où conserver la sauvegarde BIOME' } elseif ($Purpose -eq 'restore') { 'Choisir le dossier parent du nouveau catalogue restauré' } elseif ($Purpose -eq 'receive') { 'Choisir un dossier séparé pour les images originales' } else { 'Choisir le dossier des données, séparé du catalogue' }
+        $dialog.Description = if ($Purpose -eq 'workspace') { 'Choisir un catalogue BIOME ou son dossier parent pour cette opération' } elseif ($Purpose -eq 'backup') { 'Choisir où conserver la sauvegarde BIOME' } elseif ($Purpose -eq 'restore') { 'Choisir le dossier parent du nouveau catalogue restauré' } elseif ($Purpose -eq 'receive') { 'Choisir un dossier séparé pour les images originales' } else { 'Choisir le dossier des données, séparé du catalogue' }
         $dialog.ShowNewFolderButton = $true
         $result = $dialog.ShowDialog($owner)
         $selected = $dialog.SelectedPath
