@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-alpha.5 — 2026-10-19
+
+- Group delivery contents by notebook entry with readable titles and image, script, text and mail previews.
+- Preserve selection through filters and allow delivery-specific labels without renaming source files.
+- Separate source messages and technical archives; add an explicit review before ZIP creation.
+- Freeze readable provenance and labels in each delivery; reject changed selections.
+- Cover inventory, previews, ZIP contents and selection behavior with synthetic fixtures.
+
 ## 3.0.0-alpha.4 — 2026-10-19
 
 - Fix the remaining old 5 MB / 20 MB validation in the browser save form.

@@ -60,7 +60,8 @@ def read_project(root):
             'total_minutes': sum(x['minutes'] for x in logs), 'historical_time_unknown': True}
 
 def delivery_files(root):
-    return [{'file':p.relative_to(root).as_posix(),'bytes':p.stat().st_size} for folder in ['files','exchanges','journal'] for p in sorted((root/folder).rglob('*')) if p.is_file() and not p.is_symlink()]
+    from delivery_catalog import inventory
+    return inventory(root)
 
 def delivery_title(root):
     records=load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else []
@@ -69,10 +70,19 @@ def delivery_title(root):
     return {'label':f"{title} — livraison v{version:02d} — {datetime.now().strftime('%Y-%m-%d')}",'version':version}
 
 def make_delivery(root,data):
-    available={f['file'] for f in delivery_files(root)}
+    inventory={f['file']:f for f in delivery_files(root)}
+    available=set(inventory)
     selected=data.get('files',[])
     if not isinstance(selected,list) or any(not isinstance(f,str) or f not in available for f in selected): raise ValueError('Sélection de fichiers invalide')
     selected=list(dict.fromkeys(selected))
+    labels=data.get('display_labels',{})
+    revisions=data.get('revisions')
+    if not isinstance(labels,dict) or any(key not in selected or not isinstance(value,str) or not value.strip() or len(value)>200 for key,value in labels.items()):
+        raise ValueError('Libellés de livraison invalides (200 caractères maximum).')
+    if revisions is not None and (not isinstance(revisions,dict) or set(revisions)!=set(selected) or any(revisions[key]!=inventory[key]['revision'] for key in selected)):
+        raise ValueError('Un élément a changé depuis la sélection. Actualisez le projet et vérifiez la livraison à nouveau.')
+    presentation=[{**inventory[key], 'title':labels.get(key,inventory[key]['title']).strip()} for key in selected]
+    display={item['file']:item['title'] for item in presentation}
     datasets=load(root/'records/datasets.json')
     requested=data.get('dataset_ids',[]);copies=data.get('copy_dataset_ids',[])
     ids={x['id'] for x in datasets}
@@ -101,7 +111,7 @@ def make_delivery(root,data):
     title=delivery_title(root);stamp=datetime.now().astimezone().isoformat()
     slug=re.sub(r'[^a-zA-Z0-9]+','-',unicodedata.normalize('NFKD',project['title']).encode('ascii','ignore').decode()).strip('-')[:80] or 'projet'
     filename=f"{datetime.now().strftime('%Y-%m-%d')}_{slug}_livraison-v{title['version']:02d}.zip"
-    item={'id':did,**title,'created_at':stamp,'file':'deliveries/'+filename,'files':selected,'references':references,'note':str(data.get('note','')).strip()[:4000]}
+    item={'id':did,**title,'created_at':stamp,'file':'deliveries/'+filename,'files':selected,'references':references,'note':str(data.get('note','')).strip()[:4000], 'selection':presentation}
     folder=root/'deliveries';folder.mkdir(exist_ok=True)
     destination=safe_file(root,item['file']);temporary=folder/(did+'.tmp')
     history=[]
@@ -113,7 +123,11 @@ def make_delivery(root,data):
     manifest=dict(item);manifest['checksums']={}
     esc=html.escape
     page=['<!doctype html><html lang="fr"><meta charset="utf-8"><title>'+esc(title['label'])+'</title><style>body{font:16px/1.6 system-ui;max-width:1000px;margin:40px auto;padding:20px}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f4f4f4;padding:16px}li{margin:8px 0}@media print{a{color:inherit}}</style>', '<h1>'+esc(project['title'])+'</h1>','<p>'+esc(title['label'])+'</p>','<pre>'+esc(item['note'])+'</pre>','<h2>Fichiers inclus</h2><ul>']
-    for source,name in sources: page.append('<li><a href="'+quote(name,safe='/')+'">'+esc(name)+'</a></li>')
+    for source,name in sources:
+        label=display.get(name,source.name)
+        origin=inventory.get(name,{})
+        context=' — '+origin.get('group_title','') if origin.get('group_title') else ''
+        page.append('<li><a href="'+quote(name,safe='/')+'">'+esc(label)+'</a><small>'+esc(context)+' — '+esc(origin.get('name',source.name))+'</small></li>')
     page+=['</ul><h2>Cadrage au moment de la livraison</h2>']
     statuses={'Intake':'À cadrer','Active':'En cours','Review':'En validation','Completed':'Terminé','OnHold':'En pause'}
     page.append('<p>Statut : '+esc(statuses.get(snapshot['status'],snapshot['status']))+'</p>')
@@ -133,6 +147,9 @@ def make_delivery(root,data):
         with zipfile.ZipFile(temporary,'w',zipfile.ZIP_DEFLATED,allowZip64=True) as archive:
             for source,name in sources:
                 before=source.stat();digest=hashlib.sha256()
+                expected=inventory.get(name)
+                if expected and (before.st_size,before.st_mtime_ns)!=(expected['bytes'],expected['modified_ns']):
+                    raise ValueError('Fichier modifié avant la copie : '+source.name+' ; vérifiez la sélection à nouveau.')
                 with source.open('rb') as stream, archive.open(name,'w',force_zip64=True) as target:
                     while chunk:=stream.read(1024*1024): target.write(chunk);digest.update(chunk)
                 after=source.stat()
@@ -140,7 +157,7 @@ def make_delivery(root,data):
                 manifest['checksums'][name]=digest.hexdigest()
                 if source.suffix.lower()=='.md':
                     if before.st_size>10_000_000: raise ValueError('Document Markdown trop volumineux pour la synthèse : '+source.name)
-                    page+=['<h3>'+esc(name)+'</h3><pre>'+esc(source.read_text(encoding='utf-8-sig',errors='replace'))+'</pre>']
+                    page+=['<h3>'+esc(display.get(name,source.name))+'</h3><pre>'+esc(source.read_text(encoding='utf-8-sig',errors='replace'))+'</pre>']
             archive.writestr('README.html','\n'.join(page)+ '</html>')
             archive.writestr('README.md','# '+title['label']+'\n\nOuvrez README.html dans votre navigateur pour lire la synthèse et les notes.\n')
             archive.writestr('manifest.json',json.dumps(manifest,ensure_ascii=False,indent=2))

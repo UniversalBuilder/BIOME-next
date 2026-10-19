@@ -13,7 +13,7 @@ MAX_ENTRY_FILES = 100
 MAX_ENTRY_BYTES = 100_000_000
 
 
-def read_msg(raw):
+def read_msg(raw, include_images=True):
     vendor=Path(__file__).with_name('vendor')
     if vendor.is_dir() and str(vendor) not in sys.path:
         sys.path.insert(0,str(vendor))
@@ -28,7 +28,7 @@ def read_msg(raw):
         date=message.sent_date
         if date: headers.append(('Date du message',date.isoformat()))
         return {'headers':headers,'body':message.body,'html':message.html_body,'date':date,
-                'images':extract_images(message.attachments)}
+                'images':extract_images(message.attachments) if include_images else {'files':[], 'omitted':0}}
     except Exception:
         raise ValueError('Le message Outlook est illisible ou utilise un format non pris en charge.')
 

@@ -1,5 +1,5 @@
 """Exercise the compiled application from a relocated copy, without developer Python."""
-import argparse,base64,hashlib,io,json,os,re,shutil,subprocess,tempfile,time,urllib.request,urllib.error,zipfile
+import argparse,base64,hashlib,io,json,os,re,shutil,subprocess,tempfile,time,urllib.request,urllib.error,urllib.parse,zipfile
 from pathlib import Path
 
 
@@ -38,6 +38,14 @@ def run(executable,msg=None):
             item=post('api/projects',{'title':'Standalone synthetic','contact':'Example person','request':'Synthetic request'})
             key=item['key'];query='?project='+key
             post('api/entries'+query,{'type':'note','text':'Local session','date':'2026-10-15','time':'10:00','minutes':15})
+            for asset in ['delivery-selector.js','delivery-selector.css']:
+                assert urllib.request.urlopen(url+asset,timeout=10).status==200
+            project=get('api/project'+query);selected=project['delivery_files'][0]
+            preview=get('api/delivery-preview'+query+'&file='+urllib.parse.quote(selected['file']))
+            assert preview['text'] and selected['revision'] and selected['group_title']
+            post('api/deliveries'+query,{'files':[selected['file']],'display_labels':{selected['file']:'Synthetic delivery note'},'revisions':{selected['file']:selected['revision']},'note':'Packaged selector smoke test'})
+            project=get('api/project'+query)
+            assert project['deliveries'][-1]['selection'][0]['title']=='Synthetic delivery note'
             source=base/'external.txt';source.write_text('Synthetic external data',encoding='utf-8')
             post('api/datasets'+query,{'name':'Synthetic external','location':str(source),'role':'reference'})
             result=get('api/diagnostics');assert result['errors']==0 and result['locations'][0]['state']=='accessible',result

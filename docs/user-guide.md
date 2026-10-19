@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.4 · Windows x64 · October 16, 2026
+3.0.0-alpha.5 · Windows x64 · October 19, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,7 +25,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.4.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.4), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.5.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.5), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Use **Quitter BIOME** to stop the local application service when finished.
 
@@ -101,7 +101,13 @@ For scripts, choose **Version de script / pipeline** when attaching a file. The 
 
 Each ZIP freezes the chosen content and project context. Later edits do not rewrite past deliveries. Download and send the ZIP using your usual channel; BIOME does not send it automatically. Create another numbered delivery for a correction.
 
-![Prepare a delivery](images/13-prepare-delivery.jpg)
+Contents are grouped by notebook entry, with their date, original filename, caption and version. Click a row to preview it; check its checkbox to include it. Search and type filters preserve your selection. Images can be enlarged; scripts and messages have text previews. Source messages and technical archives are separate and included only when explicitly checked.
+
+**Modifier le libellé** changes the display label for this delivery only. Source filenames and notebook metadata remain unchanged. Use **Vérifier la livraison** to review the selected documents and linked-data choices, then write the recipient message and create the ZIP. If a file changed since selection, refresh the project and review it again. The project context and history are included automatically; unselected notebook content is not.
+
+![Grouped selection and script preview](images/24-delivery-selection.jpg)
+
+![Review before creating the ZIP](images/25-delivery-review.jpg)
 
 ![Delivery history](images/12-deliveries.jpg)
 

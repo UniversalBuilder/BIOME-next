@@ -42,6 +42,22 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                         page+='''<script>document.querySelector('#stop-biome').onclick=async function(){this.disabled=true;try{const r=await fetch('/api/shutdown',{method:'POST',headers:{'X-Biome-Token':token,'Content-Type':'application/json'},body:'{}'});if(!r.ok)throw new Error('Arrêt impossible');document.body.replaceChildren();const p=document.createElement('p');p.style.padding='40px';p.textContent='BIOME est arrêté. Vous pouvez fermer cet onglet.';document.body.append(p)}catch(e){this.disabled=false;alert(e.message)}};</script>'''
                     self.send(200,page,'text/html; charset=utf-8')
                 elif route=='/project-sort.js': self.send(200,(HERE/'project_sort.js').read_text(encoding='utf-8'),'application/javascript; charset=utf-8')
+                elif route in ['/delivery-selector.js','/delivery-selector.css']:
+                    filename='delivery_selector.js' if route.endswith('.js') else 'delivery_selector.css'
+                    self.send(200,(HERE/filename).read_text(encoding='utf-8'),'application/javascript; charset=utf-8' if route.endswith('.js') else 'text/css; charset=utf-8')
+                elif route=='/api/delivery-preview':
+                    from delivery_catalog import preview,image_bytes,checked_path
+                    query=parse_qs(urlparse(self.path).query);relative=query.get('file',[''])[0]
+                    if query.get('image',[''])[0]=='1':
+                        raw,mime=image_bytes(root,relative)
+                        self.send_response(200);self.send_header('Content-Type',mime);self.send_header('X-Content-Type-Options','nosniff');self.send_header('Cache-Control','no-store');self.end_headers();self.wfile.write(raw)
+                    elif query.get('download',[''])[0]=='1':
+                        path,item=checked_path(root,relative)
+                        from urllib.parse import quote
+                        self.send_response(200);self.send_header('Content-Type','application/octet-stream');self.send_header('Content-Disposition',"attachment; filename*=UTF-8''"+quote(item['name']));self.send_header('X-Content-Type-Options','nosniff');self.end_headers()
+                        with path.open('rb') as stream:
+                            while chunk:=stream.read(65536):self.wfile.write(chunk)
+                    else:self.send(200,json.dumps(preview(root,relative),ensure_ascii=False))
                 elif route=='/api/about':
                     from app_version import VERSION,CHANNEL
                     self.send(200,json.dumps({'name':'BIOME','version':VERSION,'channel':CHANNEL,'project_format':'1.1','catalogue_format':1,'ui_language':'fr','publication_ready':False}))
@@ -93,6 +109,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                     self.send_header('Content-Disposition','inline' if preview else 'attachment');self.send_header('X-Content-Type-Options','nosniff')
                     self.end_headers();self.wfile.write(raw)
                 else: self.send(404,'{}')
+            except (ValueError,OSError) as e: self.send(400,json.dumps({'error':str(e)}))
             except Exception as e: self.send(500,json.dumps({'error':str(e)}))
         def do_POST(self):
             nonlocal initial,catalogue_required

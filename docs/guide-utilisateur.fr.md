@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.4 · Windows · 16 octobre 2026
+Version 3.0.0-alpha.5 · Windows · 19 octobre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.4), téléchargez `BIOME-Windows-portable-3.0.0-alpha.4.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.5), téléchargez `BIOME-Windows-portable-3.0.0-alpha.5.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 
@@ -123,7 +123,13 @@ Dans **Livraisons → Préparer une livraison**, rédigez un message et sélecti
 
 Le ZIP conserve les éléments choisis et le contexte du projet au moment de sa création. Une modification ultérieure du cahier ou du cadrage ne modifie pas une livraison existante. BIOME prépare le ZIP ; vous l’envoyez ensuite par le canal approprié.
 
-![Sélection des fichiers et des données d’une livraison](images/13-prepare-delivery.jpg)
+Les contenus sont regroupés par entrée du cahier, avec leur date, nom d’origine, légende et version. Cliquez sur une ligne pour l’aperçu ; cochez sa case pour l’inclure. La recherche et les filtres conservent votre sélection. Les images peuvent être agrandies ; les scripts et messages disposent d’un aperçu texte. Les messages sources et archives techniques sont séparés et ne sont transmis que si vous les cochez explicitement.
+
+**Modifier le libellé** change le titre pour cette livraison seulement, sans renommer les fichiers sources. Passez à **Vérifier la livraison**, contrôlez les documents et les données liées, puis rédigez le message et créez le ZIP. Si un fichier a changé depuis la sélection, actualisez le projet et vérifiez-le à nouveau. Le contexte et l’historique du projet sont inclus automatiquement ; le contenu des notes non sélectionnées ne l’est pas.
+
+![Sélection par échange et aperçu de script](images/24-delivery-selection.jpg)
+
+![Récapitulatif avant création du ZIP](images/25-delivery-review.jpg)
 
 Les livraisons numérotées restent disponibles avec leur date, commentaire et lien de téléchargement. Une correction transmise donne lieu à une nouvelle livraison.
 
