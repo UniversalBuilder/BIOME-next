@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-alpha.3 — 2026-10-19
+
+- Import messages up to 50 MB and extract illustrations up to 10 MB each,
+  with a 50 MB extraction budget and 100 MB per saved entry (100 files).
+- Align browser validation, server request budgets and persistence limits so
+  large messages can be saved together with their illustrations.
+- Cover large-message persistence over HTTP with entirely synthetic fixtures.
+
 ## 3.0.0-alpha.2 — 2026-10-16
 
 - Fix external-access checks on Windows with legacy console encodings; preserve

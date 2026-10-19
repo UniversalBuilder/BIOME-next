@@ -106,7 +106,8 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             try:
                 root=self.selected_project()
                 size=int(self.headers.get('Content-Length','0'))
-                if size<1 or size>35_000_000: raise ValueError('Requête trop grande ou vide')
+                limit = 140_000_000 if route in ['/api/entries','/api/projects'] else 70_000_000 if route in ['/api/import-preview','/api/request-preview'] else 35_000_000
+                if size<1 or size>limit: raise ValueError('Requête trop grande ou vide')
                 data=json.loads(self.rfile.read(size))
                 if route in ['/api/catalogue-create','/api/catalogue-open','/api/demo-install']:
                     from catalogues import create_catalogue,open_catalogue,remember_catalogue

@@ -6,6 +6,13 @@ import sys
 from pathlib import Path
 
 
+MAX_MESSAGE_BYTES = 50_000_000
+MAX_IMAGE_BYTES = 10_000_000
+MAX_IMAGE_TOTAL_BYTES = 50_000_000
+MAX_ENTRY_FILES = 100
+MAX_ENTRY_BYTES = 100_000_000
+
+
 def read_msg(raw):
     vendor=Path(__file__).with_name('vendor')
     if vendor.is_dir() and str(vendor) not in sys.path:
@@ -40,7 +47,7 @@ def extract_images(attachments):
         elif raw[:4]==b'RIFF' and raw[8:12]==b'WEBP':extension='.webp'
         if extension is None:
             omitted+=1;continue
-        if len(raw)>5_000_000 or len(images)>=19 or total+len(raw)>15_000_000:
+        if len(raw)>MAX_IMAGE_BYTES or len(images)>=MAX_ENTRY_FILES-1 or total+len(raw)>MAX_IMAGE_TOTAL_BYTES:
             omitted+=1;continue
         name=re.split(r'[/\\]',attachment.file_name or '')[-1]
         name=re.sub(r'[\x00-\x1f:<>"|?*]','_',name).strip(' .')

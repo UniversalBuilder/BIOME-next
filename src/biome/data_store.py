@@ -1,4 +1,5 @@
 """Project workflows independent of HTTP and the user interface."""
+from mail_messages import MAX_MESSAGE_BYTES, MAX_IMAGE_BYTES, MAX_ENTRY_FILES, MAX_ENTRY_BYTES
 from pathlib import Path
 import csv, io, json, os, uuid, base64, hashlib, zipfile, html, re, unicodedata
 from urllib.parse import quote
@@ -165,7 +166,7 @@ def preview_import(data):
     name=str(data.get('name','exchange.txt'))
     if Path(name).name!=name or name.lower().split('.')[-1] not in ['eml','txt','msg']: raise ValueError('Choisissez un fichier .msg, .eml ou .txt ; vous pouvez aussi coller le texte du mail')
     raw=base64.b64decode(data.get('content',''),validate=True)
-    if not raw or len(raw)>5_000_000: raise ValueError('Message vide ou supérieur à 5 Mo')
+    if not raw or len(raw)>MAX_MESSAGE_BYTES: raise ValueError('Message vide ou supérieur à 50 Mo')
     stamp=None;headers=[];images=[];warnings=[]
     if name.lower().endswith('.msg'):
         from mail_messages import read_msg
@@ -280,7 +281,7 @@ def add_entry(root, data):
         item={**existing,**item,'created_at':existing.get('created_at'),'edited_at':datetime.now().astimezone().isoformat()}
     attached=[]
     uploads=data.get('attachments',[])
-    if not isinstance(uploads,list) or len(uploads)>20: raise ValueError('Maximum vingt fichiers')
+    if not isinstance(uploads,list) or len(uploads)>MAX_ENTRY_FILES: raise ValueError('Maximum 100 fichiers')
     uploaded_bytes=0
     for upload in uploads:
         name=upload['name']
@@ -288,8 +289,9 @@ def add_entry(root, data):
             raise ValueError('Nom de fichier invalide')
         raw=base64.b64decode(upload['content'],validate=True)
         uploaded_bytes+=len(raw)
-        if uploaded_bytes>20_000_000: raise ValueError('Maximum 20 Mo de pièces jointes par enregistrement')
-        if len(raw)>5_000_000: raise ValueError('Maximum 5 Mo par fichier')
+        if uploaded_bytes>MAX_ENTRY_BYTES: raise ValueError('Maximum 100 Mo de pièces jointes par enregistrement')
+        limit = MAX_MESSAGE_BYTES if Path(name).suffix.lower() in ['.msg', '.eml', '.txt'] else MAX_IMAGE_BYTES
+        if len(raw)>limit: raise ValueError('Maximum 50 Mo par message ou fichier texte ; 10 Mo par autre fichier')
         role=upload.get('role','attachment')
         if role not in ['attachment','version']: raise ValueError('Rôle invalide')
         fid='file-'+uuid.uuid4().hex

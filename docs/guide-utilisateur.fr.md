@@ -1,8 +1,10 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.2 · Windows · 16 octobre 2026
+Version 3.0.0-alpha.3 · Windows · 16 octobre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
+
+Depuis alpha.3, les messages acceptent 50 Mo et les illustrations 10 Mo ; certaines captures alpha.2 montrent encore les anciennes limites. Le total par entrée est de 100 Mo et l’extraction des illustrations est plafonnée à 50 Mo.
 
 Toutes les captures ci-dessous proviennent de l’application réelle et utilisent exclusivement des identités, images et temps fictifs. Les dates et valeurs illustrent les fonctions, pas des résultats scientifiques.
 
@@ -23,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.2), téléchargez `BIOME-Windows-portable-3.0.0-alpha.2.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.3), téléchargez `BIOME-Windows-portable-3.0.0-alpha.3.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 
@@ -81,7 +83,7 @@ Le **Cahier** présente les entrées datées. Filtrez par type : note de travail
 
 **Ajouter une entrée** ouvre le formulaire. Choisissez le type, la date et l’heure de l’activité, écrivez une note utile et ajoutez éventuellement des tags et petits fichiers. Le temps correspond au **travail humain estimé**, saisi une seule fois pour une séance même si plusieurs notes la décrivent. Laissez vide si inconnu ou déjà compté ; vide ne signifie pas zéro travail. Le récapitulatif affiche les séances enregistrées.
 
-Les pièces jointes du cahier sont limitées à 20 fichiers, 5 Mo chacun et 20 Mo au total. Référencez ou recevez les gros fichiers via **Fichiers**.
+Les pièces jointes du cahier sont limitées à 100 fichiers, 10 Mo chacun (50 Mo pour un message ou fichier texte) et 100 Mo au total. Référencez ou recevez les gros fichiers via **Fichiers**.
 
 ![Nouvelle entrée : date, contenu, temps, tags et fichiers](images/08-entry-and-time.jpg)
 
