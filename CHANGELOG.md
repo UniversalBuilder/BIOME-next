@@ -1,5 +1,10 @@
 # Changelog
 
+## 3.0.0-alpha.4 — 2026-10-19
+
+- Fix the remaining old 5 MB / 20 MB validation in the browser save form.
+- Test the actual notebook form validation, not only server persistence.
+
 ## 3.0.0-alpha.3 — 2026-10-19
 
 - Import messages up to 50 MB and extract illustrations up to 10 MB each,

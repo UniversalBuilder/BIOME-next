@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.3 · Windows · 16 octobre 2026
+Version 3.0.0-alpha.4 · Windows · 16 octobre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.3), téléchargez `BIOME-Windows-portable-3.0.0-alpha.3.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.4), téléchargez `BIOME-Windows-portable-3.0.0-alpha.4.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 

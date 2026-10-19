@@ -25,4 +25,5 @@ jobs:
       - run: python -m pip install -r src/biome/requirements-build.txt
       - run: python -m unittest discover -s src/biome -p 'test_*.py'
       - run: node src/biome/test_project_sort.js
+      - run: node src/biome/test_entry_upload.js
       - run: python tools/render_guides.py
