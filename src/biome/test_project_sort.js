@@ -12,6 +12,9 @@ assert.equal(keys('created_at','desc'),'cba');
 assert.equal(keys('created_at','asc'),'bca');
 assert.equal(keys('last_activity','desc'),'bca'); // Real instants, including offsets.
 assert.equal(keys('people','asc'),'cba');
+assert.equal(keys('group','asc'),'cba');
+assert.equal(keys('contact','asc'),'bca');
+assert.equal(keys('contact','desc'),'cba');
 assert.equal(keys('status','desc'),'bca'); // Unknown stays last in both directions.
 assert.equal(keys('status','asc'),'cba');
 assert.equal(rows[0].key,'a'); // Sorting must not mutate the source array.

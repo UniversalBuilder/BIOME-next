@@ -1,4 +1,5 @@
 """Project workflows independent of HTTP and the user interface."""
+from report_summary import summarize, known_label
 from mail_messages import MAX_MESSAGE_BYTES, MAX_IMAGE_BYTES, MAX_ENTRY_FILES, MAX_ENTRY_BYTES
 from pathlib import Path
 import csv, io, json, os, uuid, base64, hashlib, zipfile, html, re, unicodedata
@@ -686,7 +687,7 @@ def activity_report(initial,year=None,start=None,end=None):
         project=next(project for key,project,_,_ in collected if key==row['key'])
         row.update({key:project.get('framing',{}).get(key,[]) for key in ['software','modalities','topics']})
         row.update(group_id=project.get('group_id'),contact_id=project.get('contact_id'))
-    return {'monthly_minutes':[{'month':month,'minutes':minutes} for month,minutes in sorted(monthly.items())],'start':first.isoformat(),'end':last.isoformat(),'group_count':len({row.get('group_id') or row['group'] for row in rows if row['group']}),'contact_count':len({row.get('contact_id') or row['contact'] for row in rows if row['contact']}),'year':chosen,'years':sorted(years|{chosen},reverse=True),'projects':rows,'total_minutes':sum(row['minutes'] or 0 for row in rows),'projects_with_time':sum(row['minutes'] is not None for row in rows),'entries_without_time':sum(row['entries_without_time'] for row in rows),'warnings':warnings}
+    return {'breakdowns':{key:summarize(rows,key) for key in ['group','activity_type','software','modalities','topics']},'monthly_minutes':[{'month':month,'minutes':minutes} for month,minutes in sorted(monthly.items())],'start':first.isoformat(),'end':last.isoformat(),'group_count':len({row.get('group_id') or row['group'] for row in rows if known_label(row['group'])}),'contact_count':len({row.get('contact_id') or row['contact'] for row in rows if row['contact']}),'year':chosen,'years':sorted(years|{chosen},reverse=True),'projects':rows,'total_minutes':sum(row['minutes'] or 0 for row in rows),'projects_with_time':sum(row['minutes'] is not None for row in rows),'entries_without_time':sum(row['entries_without_time'] for row in rows),'warnings':warnings}
 
 def export_activity(report):
     tables={}
@@ -694,21 +695,20 @@ def export_activity(report):
     for row in report['projects']:
         tables['projects.csv'].append([row['title'],row['group'],row['contact'],row['status'],row['minutes'] if row['minutes'] is not None else '',row['session_count'],row['activity_type'],'; '.join(row['software']),'; '.join(row['modalities']),'; '.join(row['topics'])])
     for key in ['group','activity_type','software','modalities','topics']:
-        categories={}
-        for row in report['projects']:
-            values=(row[key] or ['Not specified']) if isinstance(row[key],list) else [row[key] or 'Not specified']
-            for value in set(values):
-                item=categories.setdefault(value,{'projects':0,'minutes':None});item['projects']+=1
-                if key in ['group','activity_type'] and row['minutes'] is not None: item['minutes']=(item['minutes'] or 0)+row['minutes']
-        headers=['Category','Projects']+(['Recorded minutes'] if key in ['group','activity_type'] else [])
-        tables[key+'.csv']=[headers]+[[name,item['projects']]+([item['minutes'] if item['minutes'] is not None else ''] if len(headers)==3 else []) for name,item in sorted(categories.items(),key=lambda pair:(-pair[1]['projects'],pair[0]))]
+        summary=summarize(report['projects'],key)
+        timed=key in ['group','activity_type']
+        tables[key+'.csv']=[['Category','Projects']+(['Recorded minutes'] if timed else [])]+[[item['label'],item['count']]+([item['value']] if timed else []) for item in summary['items']]
+    tables['coverage.csv']=[['Breakdown','Included projects','Excluded projects','Reason']]+[[key,summary['included'],summary['excluded'],summary['reason']] for key in ['group','activity_type','software','modalities','topics'] for summary in [summarize(report['projects'],key)]]
     esc=lambda value:html.escape(str(value))
     page=['<!doctype html><html lang="fr"><meta charset="utf-8"><title>BIOME — Bilan d’activité</title><style>body{font:15px system-ui;max-width:1100px;margin:40px auto;padding:20px;color:#20242a}table{border-collapse:collapse;width:100%;margin:20px 0}th,td{text-align:left;border-bottom:1px solid #ccc;padding:9px;overflow-wrap:anywhere}th{background:#eee}h2{margin-top:35px}@media print{button{display:none}thead{display:table-header-group}tr{break-inside:avoid}body{margin:0;font-size:10pt}}</style><button onclick="window.print()">Imprimer / enregistrer en PDF</button><h1>Bilan d’activité BIOME</h1>', '<p>Période : '+esc(report['start'])+' au '+esc(report['end'])+' (dates incluses).</p>', '<p>'+esc(report['total_minutes']//60)+' h '+esc(report['total_minutes']%60)+' min renseignées · '+esc(len(report['projects']))+' projets · '+esc(report['group_count'])+' groupes · '+esc(report['contact_count'])+' contacts.</p>', '<p>Temps humain saisi à la date des séances. Une valeur vide signifie un temps non renseigné, pas zéro travail. '+esc(report['entries_without_time'])+' entrées sans saisie de temps associée. Les catégories et statuts sont les valeurs actuelles des projets. Un projet peut compter dans plusieurs catégories scientifiques ; ne pas additionner ces nombres. Aucune répartition des heures par logiciel n’est supposée.</p>']
-    labels={'projects':'Détail des projets','group':'Par groupe','activity_type':'Par intervention principale','software':'Logiciels','modalities':'Modalités d’imagerie','topics':'Thématiques d’analyse'}
+    labels={'coverage':'Couverture des répartitions','projects':'Détail des projets','group':'Par groupe','activity_type':'Par intervention principale','software':'Logiciels','modalities':'Modalités d’imagerie','topics':'Thématiques d’analyse'}
     for filename,rows in tables.items():
         page+=['<h2>'+labels[filename[:-4]]+'</h2><table><thead><tr>'+''.join('<th>'+esc(v)+'</th>' for v in rows[0])+'</tr></thead><tbody>']
         page.extend('<tr>'+''.join('<td>'+esc(v)+'</td>' for v in row)+'</tr>' for row in rows[1:])
         page.append('</tbody></table>')
+        if filename[:-4] in ['group','activity_type','software','modalities','topics']:
+            coverage=summarize(report['projects'],filename[:-4])
+            page.append('<p>'+str(coverage['excluded'])+' projet(s) exclus de cette répartition : '+esc(coverage['reason'])+'.</p>')
     if report['warnings']: page.append('<h2>Dossiers non comptabilisés</h2><p>'+esc('; '.join(report['warnings']))+'</p>')
     page.append('<p>Exporté le '+esc(datetime.now().astimezone().isoformat())+'. Les CSV sont encodés en UTF-8 et les temps y sont exprimés en minutes.</p></html>')
     buffer=io.BytesIO()

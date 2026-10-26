@@ -49,8 +49,16 @@ def run(executable,msg=None):
             source=base/'external.txt';source.write_text('Synthetic external data',encoding='utf-8')
             post('api/datasets'+query,{'name':'Synthetic external','location':str(source),'role':'reference'})
             result=get('api/diagnostics');assert result['errors']==0 and result['locations'][0]['state']=='accessible',result
+            report=get('api/activity-report?year=2026')
+            assert report['projects_with_time']==1
+            assert report['breakdowns']['group']['excluded']==1
+            assert report['breakdowns']['group']['items']==[]
+            assert "['group','Groupe / laboratoire'],['contact','Contact']" in page
+            assert 'report-missing-projects' in page
             with urllib.request.urlopen(url+'api/activity-export?year=2026',timeout=30) as response:packed=response.read()
-            with zipfile.ZipFile(io.BytesIO(packed)) as archive:assert archive.read('activity-report.pdf').startswith(b'%PDF')
+            with zipfile.ZipFile(io.BytesIO(packed)) as archive:
+                assert archive.read('activity-report.pdf').startswith(b'%PDF')
+                assert 'coverage.csv' in archive.namelist()
             if msg:
                 imported=post('api/import-preview',{'name':msg.name,'content':base64.b64encode(msg.read_bytes()).decode()})
                 assert imported['text'] and imported['date'] and len(imported['images'])==5

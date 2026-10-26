@@ -1,6 +1,6 @@
 """Paginated activity report; vector charts and wrapped project summaries."""
 import io, html
-from collections import Counter
+from report_summary import summarize
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, PageBreak, Table, TableStyle, KeepTogether
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib import colors
@@ -26,21 +26,15 @@ def create_pdf(report):
             drawing.add(String(410,6,str(round(value,2))+' '+unit,fontSize=9))
             story.append(KeepTogether([p(label),drawing,Spacer(1,6)]))
 
-    groups=Counter()
-    for row in report['projects']:
-        if row['minutes'] is not None: groups[row['group'] or 'Non renseigné']+=row['minutes']/60
-    chart('Temps humain par groupe',groups,'h')
-    story.extend([Spacer(1,12),p('Les graphiques scientifiques comptent les projets, pas les heures. Un même projet peut figurer dans plusieurs catégories. Les catégories et statuts sont les valeurs actuelles du projet.')])
-    for key,title in [('activity_type','Interventions principales'),('software','Logiciels utilisés'),('modalities','Modalités d’imagerie'),('topics','Thématiques d’analyse')]:
-        story.append(PageBreak() if key=='topics' else Spacer(1,18))
+    for key,title in [('group','Temps humain par groupe / laboratoire'),('activity_type','Temps humain par intervention principale'),('software','Logiciels utilisés'),('modalities','Modalités d’imagerie'),('topics','Thématiques d’analyse')]:
+        story.append(Spacer(1,18))
         names={'consulting':'Conseil / consulting','training':'Formation','development':'Développement de script / workflow','analysis':'Analyse de données'}
-        counts=Counter()
-        for row in report['projects']:
-            values=row[key] if isinstance(row[key],list) else [row[key]]
-            counts.update(set(names.get(v,v) for v in values if v))
-        chart(title,counts,'projet(s)')
-        missing=sum(not row[key] for row in report['projects'])
-        story.extend([Spacer(1,10),p(str(missing)+' projet(s) sans catégorie renseignée.')])
+        summary=summarize(report['projects'],key)
+        timed=key in ('group','activity_type')
+        counts={(names.get(item['label'],item['label']) if key=='activity_type' else item['label']):item['value']/60 if timed else item['value'] for item in summary['items']}
+        chart(title,counts,'h' if timed else 'projet(s)')
+        story.extend([Spacer(1,10),p(str(summary['included'])+' projet(s) pris en compte. '+str(summary['excluded'])+' projet(s) exclus de cette répartition : '+summary['reason']+'.')])
+    story.append(p('Les graphiques scientifiques comptent les projets, pas les heures. Un projet peut figurer dans plusieurs catégories.'))
     story.extend([PageBreak(),Paragraph('Détail des projets',styles['Heading1'])])
     statuses={'Intake':'À cadrer','Active':'En cours','Review':'En validation','Completed':'Terminé','OnHold':'En pause'}
     for row in report['projects']:

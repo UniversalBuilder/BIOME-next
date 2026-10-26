@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.5 · Windows · 19 octobre 2026
+Version 3.0.0-alpha.6 · Windows · 26 octobre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.5), téléchargez `BIOME-Windows-portable-3.0.0-alpha.5.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.6), téléchargez `BIOME-Windows-portable-3.0.0-alpha.6.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 
@@ -194,3 +194,11 @@ BIOME-next est le successeur en développement de BIOME 2.x. Son modèle documen
 La version est une alpha Windows x64, avec une interface française et une fenêtre utilisant Chrome ou Edge. Elle n’est pas signée numériquement. Les fichiers restent locaux ; aucun service d’IA n’interprète vos demandes. Les données de la démo ne valident aucune méthode d’analyse.
 
 Pour signaler un problème, indiquez la version, l’étape et le résultat attendu, avec un exemple fictif. Ne joignez ni catalogue réel, email privé, images de recherche ni identifiants. Le [dépôt actif](https://github.com/UniversalBuilder/BIOME-next) contient le code, les tests et les prochaines évolutions.
+
+## Nouveautés alpha 6 : projets et bilan
+
+La liste des projets sépare **Groupe / laboratoire** et **Contact**, avec un tri indépendant sur chaque colonne. Un groupe peut être désigné par son responsable (PI), le laboratoire, le département ou la plateforme. Les crochets ne sont plus nécessaires pour distinguer ces libellés du contact ; les noms existants sont conservés.
+
+Chaque répartition du bilan indique son nombre de projets pris en compte et exclus. Pour les heures par groupe ou intervention, un projet doit avoir cette catégorie et du temps renseigné. Pour les logiciels, modalités et thématiques, seule la catégorie est nécessaire. Un zéro explicitement saisi reste comptabilisé. Les projets sans temps renseigné restent accessibles dans le volet dépliable du détail. Les exclusions sont calculées parmi les projets avec une activité documentée dans la période choisie.
+
+Le total du temps reste la somme de tous les temps saisis, même sans catégorie : il peut donc dépasser la somme d’une répartition. Les CSV et le PDF suivent les mêmes règles ; **coverage.csv** fournit les effectifs et motifs d’exclusion. Le détail exporté conserve tous les projets de la période.

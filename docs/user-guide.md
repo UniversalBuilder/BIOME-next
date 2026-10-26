@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.5 · Windows x64 · October 19, 2026
+3.0.0-alpha.6 · Windows x64 · October 26, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,7 +25,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.5.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.5), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.6.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.6), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Use **Quitter BIOME** to stop the local application service when finished.
 
@@ -160,3 +160,11 @@ Accessible means a file is present/readable or a folder can be listed. Missing, 
 The folder-based redesign is not a drop-in replacement for the legacy React/SQLite/Tauri data format. This release does not include a universal BIOME 2.x database migration. Preserve old data and backups; historical recovery needs separate review.
 
 When reporting a problem, include version, steps and expected result using a fictional example. Do not upload real catalogues, research images, private emails or credentials. Development and issues belong in [BIOME-next](https://github.com/UniversalBuilder/BIOME-next).
+
+## Alpha 6: project list and report coverage
+
+The project list now has separate sortable **Groupe / laboratoire** and **Contact** columns. Group labels may identify a PI, laboratory, department or facility. Existing names are preserved; brackets are not required to distinguish a group label from its contact.
+
+Each report breakdown shows included and excluded project counts. Time by group or intervention requires both the category and recorded time. Software, modality and topic counts only require the category. Explicitly recorded zero remains valid. Projects without recorded time are available in expandable report details. Coverage is calculated among projects with documented activity in the selected period.
+
+Total time includes all recorded sessions, even those without a category, so it can exceed a breakdown total. CSV and PDF exports use the same rules; **coverage.csv** lists inclusion and exclusion counts and reasons. Exported project details retain every project in the period.

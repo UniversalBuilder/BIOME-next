@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-alpha.6 — 2026-10-26
+
+- Separate sortable group/laboratory and contact columns in the project list.
+- Clarify that group labels can identify a PI, laboratory, department or facility.
+- Exclude missing categories and unrecorded time per report breakdown; show included and excluded project counts.
+- Collapse projects without recorded time in the report details; preserve their records and explicit zero values.
+- Use the same coverage rules for screen charts, tables, CSV and PDF exports; add coverage.csv.
+
 ## 3.0.0-alpha.5 — 2026-10-19
 
 - Group delivery contents by notebook entry with readable titles and image, script, text and mail previews.
