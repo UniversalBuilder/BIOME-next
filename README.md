@@ -1,14 +1,14 @@
-# BIOME-next 3.0.0-alpha.6
+# BIOME-next 3.0.0-alpha.7
 
 BIOME-next is the actively developed successor to [legacy BIOME 2.x](https://github.com/UniversalBuilder/BIOME). It redesigns project management around readable documentary catalogues and separate original-image storage. The legacy repository preserves the old application and its history. This is a development preview, with a different data format; it is not an automatic upgrade or database migration.
 
 
 ## Download and documentation
 
-- [Windows portable release — 3.0.0-alpha.6](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.6)
+- [Windows portable release — 3.0.0-alpha.7](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.7)
 - [Illustrated user guide (English)](docs/user-guide.md)
 - [Guide illustré complet (français)](docs/guide-utilisateur.fr.md)
-- [Release notes and limitations](docs/release-notes-3.0.0-alpha.6.md)
+- [Release notes and limitations](docs/release-notes-3.0.0-alpha.7.md)
 - [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 The Windows archive includes an offline HTML guide with screenshots. Extract
@@ -71,7 +71,7 @@ developer credentials or a personal home directory.
 
 ## Version and data formats
 
-Application version: 3.0.0-alpha.6. Project format: 1.1 (reads 1.0 and 0.1-draft).
+Application version: 3.0.0-alpha.7. Project format: 1.1 (reads 1.0 and 0.1-draft).
 Catalogue identity format: 1. Application release versions are independent of
 project format versions. No implicit rewrite of existing project data is needed
 to read an older supported format.

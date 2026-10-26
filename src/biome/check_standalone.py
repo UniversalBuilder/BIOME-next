@@ -29,6 +29,11 @@ def run(executable,msg=None):
             token=re.search("const token='([^']+)'",page).group(1)
             def get(path):return json.load(urllib.request.urlopen(url+path,timeout=20))
             def post(path,data):return json.load(urllib.request.urlopen(urllib.request.Request(url+path,data=json.dumps(data).encode(),headers={'X-Biome-Token':token,'Content-Type':'application/json'}),timeout=30))
+            from app_version import VERSION
+            assert VERSION in page and '__APP_VERSION__' not in page
+            assert get('api/about')['version']==VERSION
+            with urllib.request.urlopen(url+'favicon.ico',timeout=10) as response:
+                assert response.headers['Content-Type']=='image/x-icon' and response.read()[:4]==b'\x00\x00\x01\x00'
             assert get('api/workspace')['needs_selection'] is True
             post('api/catalogue-create',{'destination':str(base),'name':catalog.name})
             assert get('api/projects')==[]
@@ -40,6 +45,16 @@ def run(executable,msg=None):
             post('api/entries'+query,{'type':'note','text':'Local session','date':'2026-10-15','time':'10:00','minutes':15})
             for asset in ['delivery-selector.js','delivery-selector.css']:
                 assert urllib.request.urlopen(url+asset,timeout=10).status==200
+            directory=get('api/directory');old=next(x for x in directory['contacts'] if x['name']=='Example person')
+            directory=post('api/directory',{'kind':'contacts','name':'Replacement person','email':'replacement@example.org'})
+            replacement=next(x for x in directory['contacts'] if x['name']=='Replacement person')
+            removal={'kind':'contacts','id':old['id'],'replacement_id':replacement['id']}
+            preview=post('api/directory-removal-preview',removal);assert len(preview['projects'])==1
+            request=urllib.request.Request(url+'api/directory-remove',data=b'{}',headers={'Content-Type':'application/json'})
+            try:urllib.request.urlopen(request,timeout=10);raise AssertionError('Unauthenticated deletion accepted')
+            except urllib.error.HTTPError as error:assert error.code==403
+            post('api/directory-remove',{**removal,'revision':preview['revision']})
+            assert get('api/project'+query)['project']['contact']=='Replacement person'
             project=get('api/project'+query);selected=project['delivery_files'][0]
             preview=get('api/delivery-preview'+query+'&file='+urllib.parse.quote(selected['file']))
             assert preview['text'] and selected['revision'] and selected['group_title']

@@ -32,7 +32,8 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                 route=urlparse(self.path).path
                 root=self.selected_project()
                 if route=='/':
-                    page=(HERE/'index.html').read_text(encoding='utf-8').replace('__TOKEN__',token)
+                    from app_version import VERSION
+                    page=(HERE/'index.html').read_text(encoding='utf-8').replace('__TOKEN__',token).replace('__APP_VERSION__',VERSION)
                     if startup_warning:
                         import html
                         page=page.replace('<main>','<main><p role="status" style="padding:16px;border:1px solid #f4cf91;border-radius:8px">'+html.escape(startup_warning)+'</p>',1)
@@ -41,6 +42,9 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                         page=page.replace('</nav>', '<button type="button" id="stop-biome">Quitter BIOME</button></nav>',1)
                         page+='''<script>document.querySelector('#stop-biome').onclick=async function(){this.disabled=true;try{const r=await fetch('/api/shutdown',{method:'POST',headers:{'X-Biome-Token':token,'Content-Type':'application/json'},body:'{}'});if(!r.ok)throw new Error('Arrêt impossible');document.body.replaceChildren();const p=document.createElement('p');p.style.padding='40px';p.textContent='BIOME est arrêté. Vous pouvez fermer cet onglet.';document.body.append(p)}catch(e){this.disabled=false;alert(e.message)}};</script>'''
                     self.send(200,page,'text/html; charset=utf-8')
+                elif route=='/favicon.ico':
+                    raw=(HERE/'favicon.ico').read_bytes()
+                    self.send_response(200);self.send_header('Content-Type','image/x-icon');self.send_header('Content-Length',str(len(raw)));self.send_header('Cache-Control','no-cache');self.end_headers();self.wfile.write(raw)
                 elif route=='/project-sort.js': self.send(200,(HERE/'project_sort.js').read_text(encoding='utf-8'),'application/javascript; charset=utf-8')
                 elif route in ['/delivery-selector.js','/delivery-selector.css']:
                     filename='delivery_selector.js' if route.endswith('.js') else 'delivery_selector.css'
@@ -117,7 +121,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             if route=='/api/shutdown' and desktop:
                 if self.headers.get('X-Biome-Token')!=token: return self.send(403,'{}')
                 self.send(200,'{}');threading.Thread(target=httpd.shutdown,daemon=True).start();return
-            if route not in ['/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
+            if route not in ['/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
             if self.headers.get('X-Biome-Token')!=token:
                 return self.send(403,json.dumps({'error':'Cette page utilise une ancienne session. Copiez votre note, puis rechargez la page.'}))
             try:
@@ -194,6 +198,8 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                     from catalogues import remember_catalogue
                     remember_catalogue(settings,str(anchor.parent));initial=anchor;catalogue_required=False
                     return self.send(200,json.dumps({'location':str(initial.parent)},ensure_ascii=False))
+                if route=='/api/directory-removal-preview': return self.send(200,json.dumps(store.directory_removal_preview(initial,data),ensure_ascii=False))
+                if route=='/api/directory-remove': return self.send(200,json.dumps(store.remove_directory_item(initial,data),ensure_ascii=False))
                 if route=='/api/directory': return self.send(201,json.dumps(store.add_directory_item(initial,data),ensure_ascii=False))
                 if route=='/api/vocabularies': return self.send(200,json.dumps(store.edit_vocabulary(initial,data),ensure_ascii=False))
                 if route=='/api/project-info': return self.send(200,json.dumps(store.update_project_info(root,store.bind_directory(initial,data)),ensure_ascii=False))

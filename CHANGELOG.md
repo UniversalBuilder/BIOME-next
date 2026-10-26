@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.0.0-alpha.7 — 2026-10-26
+
+- Show the actual running version and prevent the new launcher from silently reopening a different release already running.
+- Add directory removal with an affected-project preview and mandatory reassignment for used contacts/groups. Preserve historical records and reject stale previews.
+- Serve the packaged application favicon.
+
 ## 3.0.0-alpha.6 — 2026-10-26
 
 - Separate sortable group/laboratory and contact columns in the project list.

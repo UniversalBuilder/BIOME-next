@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.6 · Windows x64 · October 26, 2026
+3.0.0-alpha.7 · Windows x64 · October 26, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,7 +25,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.6.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.6), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.7.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.7), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Use **Quitter BIOME** to stop the local application service when finished.
 
@@ -168,3 +168,9 @@ The project list now has separate sortable **Groupe / laboratoire** and **Contac
 Each report breakdown shows included and excluded project counts. Time by group or intervention requires both the category and recorded time. Software, modality and topic counts only require the category. Explicitly recorded zero remains valid. Projects without recorded time are available in expandable report details. Coverage is calculated among projects with documented activity in the selected period.
 
 Total time includes all recorded sessions, even those without a category, so it can exceed a breakdown total. CSV and PDF exports use the same rules; **coverage.csv** lists inclusion and exclusion counts and reasons. Exported project details retain every project in the period.
+
+## Alpha 7: running version and directory removal
+
+The running version is displayed in the header. If another release is still active, the new launcher asks you to click **Quitter BIOME** in the old window and launch the new version again. Closing only the browser window can leave the local server active.
+
+In **Contacts**, click **Supprimer…**. Unused records can be removed after confirmation. Linked records require a replacement of the same type; affected projects are listed first. Create a replacement beforehand if needed. **Réattribuer et supprimer** updates project identities and the contact email before removing the old record. Reports use the new attributions. Notes, deliveries and history are preserved. Trashed projects remain unchanged; restoring one may reintroduce an old record.

@@ -507,6 +507,42 @@ def add_directory_item(initial,data):
     write_json(initial.parent/'.biome-directory.json',records)
     return records
 
+def directory_removal_preview(initial,data):
+    kind=data.get('kind')
+    if kind not in ['contacts','groups']: raise ValueError('Type d’annuaire invalide')
+    records=directory(initial)
+    item=next((x for x in records[kind] if x['id']==data.get('id')),None)
+    if item is None: raise ValueError('Élément introuvable dans l’annuaire')
+    replacement_id=data.get('replacement_id')
+    replacement=next((x for x in records[kind] if x['id']==replacement_id),None) if replacement_id else None
+    if replacement_id and (replacement is None or replacement_id==item['id']): raise ValueError('Choisissez une autre fiche de remplacement')
+    key='contact' if kind=='contacts' else 'group'
+    projects=[]
+    for project_key,root in project_catalog(initial).items():
+        project=load(root/'biome.json')
+        if project.get(key+'_id')==item['id'] or (not project.get(key+'_id') and project.get(key)==item['name']):
+            projects.append({'key':project_key,'title':project['title'],'fields':{field:project.get(field,'') for field in ['title','contact','group','contact_email','contact_id','group_id']}})
+    revision=hashlib.sha256(json.dumps([item,replacement,projects],sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    return {'item':item,'replacement':replacement,'projects':projects,'revision':revision}
+
+
+def remove_directory_item(initial,data):
+    preview=directory_removal_preview(initial,data)
+    if data.get('revision')!=preview['revision']: raise ValueError('L’annuaire ou les projets ont changé. Vérifiez à nouveau la suppression.')
+    if preview['projects'] and not preview['replacement']: raise ValueError('Cette fiche est utilisée : choisissez une fiche de remplacement.')
+    kind=data['kind'];key='contact' if kind=='contacts' else 'group'
+    records=directory(initial);replacement=preview['replacement'];updates=[]
+    for project in preview['projects']:
+        fields=dict(project['fields']);fields[key]=replacement['name'];fields[key+'_id']=replacement['id']
+        if kind=='contacts':fields['contact_email']=replacement.get('email','')
+        updates.append({'project':project['key'],'fields':fields})
+    records[kind]=[item for item in records[kind] if item['id']!=data['id']]
+    records.setdefault('history',[]).append({'action':'remove','kind':kind,'item':preview['item'],'replacement':replacement,'projects':[p['key'] for p in preview['projects']],'date':datetime.now().astimezone().isoformat()})
+    write_json(initial.parent/'.biome-directory-pending.json',{'directory':records,'updates':updates})
+    recover_directory(initial)
+    return records
+
+
 def recover_directory(initial):
     pending=initial.parent/'.biome-directory-pending.json'
     if not pending.exists(): return

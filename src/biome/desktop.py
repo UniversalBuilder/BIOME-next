@@ -7,6 +7,7 @@ import sys
 import time
 from app_window import open_window
 import traceback
+from app_version import VERSION
 
 
 def main():
@@ -40,6 +41,15 @@ def main():
                 from urllib.parse import urlsplit
                 parsed=urlsplit(url)
                 if parsed.scheme!='http' or parsed.hostname!='127.0.0.1' or not parsed.port:raise ValueError('Invalid local instance')
+                running=instance.get('version') or 'version antérieure'
+                if running!=VERSION:
+                    message=f'BIOME {running} est déjà ouvert. Vous avez lancé BIOME {VERSION}.\n\nDans la fenêtre existante, cliquez sur « Quitter BIOME », puis relancez cette nouvelle version. Vos projets restent conservés.'
+                    if args.no_browser:
+                        if sys.stderr:sys.stderr.write(message+'\n')
+                    else:
+                        import ctypes
+                        ctypes.windll.user32.MessageBoxW(None,message,'BIOME — autre version ouverte',0x30)
+                    return 2
                 if not args.no_browser:open_window(url,state)
                 return 0
             except (OSError,ValueError,KeyError):time.sleep(.1)
@@ -68,7 +78,7 @@ def main():
         sys.stderr=log
         def ready(port):
             url='http://127.0.0.1:'+str(port)+'/'
-            store.write_json(state/'instance.json',{'url':url,'pid':os.getpid()})
+            store.write_json(state/'instance.json',{'url':url,'pid':os.getpid(),'version':VERSION})
             if not args.no_browser:open_window(url,state)
         try:server.serve(root,args.port,settings,state_dir=state,on_ready=ready,desktop=True,startup_warning=warning,catalogue_required=catalogue_required)
         finally:sys.stderr=previous_stderr;log.close()

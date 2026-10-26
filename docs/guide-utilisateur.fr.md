@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.6 · Windows · 26 octobre 2026
+Version 3.0.0-alpha.7 · Windows · 26 octobre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.6), téléchargez `BIOME-Windows-portable-3.0.0-alpha.6.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.7), téléchargez `BIOME-Windows-portable-3.0.0-alpha.7.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 
@@ -202,3 +202,9 @@ La liste des projets sépare **Groupe / laboratoire** et **Contact**, avec un tr
 Chaque répartition du bilan indique son nombre de projets pris en compte et exclus. Pour les heures par groupe ou intervention, un projet doit avoir cette catégorie et du temps renseigné. Pour les logiciels, modalités et thématiques, seule la catégorie est nécessaire. Un zéro explicitement saisi reste comptabilisé. Les projets sans temps renseigné restent accessibles dans le volet dépliable du détail. Les exclusions sont calculées parmi les projets avec une activité documentée dans la période choisie.
 
 Le total du temps reste la somme de tous les temps saisis, même sans catégorie : il peut donc dépasser la somme d’une répartition. Les CSV et le PDF suivent les mêmes règles ; **coverage.csv** fournit les effectifs et motifs d’exclusion. Le détail exporté conserve tous les projets de la période.
+
+## Alpha 7 : version ouverte et suppression des fiches
+
+La version effectivement ouverte est affichée en haut de la fenêtre. Si une autre version fonctionne encore, le nouveau lanceur vous demande de cliquer sur **Quitter BIOME** dans cette ancienne fenêtre, puis de relancer la nouvelle version. Fermer uniquement la fenêtre peut laisser le serveur local actif.
+
+Dans **Contacts**, cliquez sur **Supprimer…**. Une fiche inutilisée peut être retirée après confirmation. Si elle est associée à des projets, la liste des projets concernés est affichée et une fiche de remplacement du même type est obligatoire. Créez-la d’abord si nécessaire. Le bouton **Réattribuer et supprimer** met à jour les noms et l’email du contact dans les projets, puis retire l’ancienne fiche. Les bilans utilisent les nouvelles attributions. Les notes, livraisons et historiques sont conservés. Les projets dans la corbeille restent inchangés ; leur restauration peut réintroduire une ancienne fiche.
