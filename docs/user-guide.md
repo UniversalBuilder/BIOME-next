@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.8 · Windows x64 · November 2, 2026
+3.0.0-alpha.9 · Windows x64 · November 2, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,9 +25,9 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.8.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.8), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.9.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.9), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
-On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Use **Quitter BIOME** to stop the local application service when finished.
+On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Close the dedicated window to quit BIOME; **Quitter BIOME** is also available.
 
 ![First launch and storage model](images/01-first-launch.jpg)
 
@@ -183,6 +183,12 @@ Total time includes all recorded sessions, even those without a category, so it 
 
 ## Alpha 7: running version and directory removal
 
-The running version is displayed in the header. If another release is still active, the new launcher asks you to click **Quitter BIOME** in the old window and launch the new version again. Closing only the browser window can leave the local server active.
+The running version is displayed in the header. If another release is still active, the new launcher asks you to click **Quitter BIOME** in the old window and launch the new version again. This warning concerns older releases; since alpha.9, closing the last dedicated window stops BIOME.
 
 In **Contacts**, click **Supprimer…**. Unused records can be removed after confirmation. Linked records require a replacement of the same type; affected projects are listed first. Create a replacement beforehand if needed. **Réattribuer et supprimer** updates project identities and the contact email before removing the old record. Reports use the new attributions. Notes, deliveries and history are preserved. Trashed projects remain unchanged; restoring one may reintroduce an old record.
+
+### Closing BIOME
+
+Close the dedicated window with its usual close button. Closing the last BIOME window stops the application and releases its lock. If more than one BIOME window is open, the application stays active until the last one closes. An active server-side copy or save finishes before shutdown. **Quitter BIOME** remains an alternative and closes the application windows too.
+
+Refreshing a page, minimizing the window or using a different tab does not trigger shutdown. This behavior applies to the normal desktop launcher; explicitly headless/server launches remain active until stopped. The first update from an older release still requires quitting that old instance before launching this one.

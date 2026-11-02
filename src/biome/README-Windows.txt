@@ -14,7 +14,7 @@ Les images originales sont conservées dans un dossier de données séparé, sur
 La sauvegarde du catalogue ne remplace pas celle des données externes.
 
 Les réglages et le journal technique sont dans %LOCALAPPDATA%\BIOME, hors du programme.
-Pour arrêter : bouton Quitter BIOME dans la barre supérieure.
+Pour arrêter : fermez la dernière fenêtre BIOME avec sa croix, ou utilisez Quitter BIOME.
 Fermer seulement la fenêtre laisse BIOME disponible en arrière-plan.
 Un deuxième lancement ouvre l’instance existante.
 

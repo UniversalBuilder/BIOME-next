@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.8 · Windows · 2 novembre 2026
+Version 3.0.0-alpha.9 · Windows · 2 novembre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,9 +25,9 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.8), téléchargez `BIOME-Windows-portable-3.0.0-alpha.8.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.9), téléchargez `BIOME-Windows-portable-3.0.0-alpha.9.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
-Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
+Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. Fermez la fenêtre dédiée pour quitter BIOME ; le bouton **Quitter BIOME** reste aussi disponible.
 
 ![Premier lancement : les trois choix et le modèle de stockage](images/01-first-launch.jpg)
 
@@ -217,6 +217,12 @@ Le total du temps reste la somme de tous les temps saisis, même sans catégorie
 
 ## Alpha 7 : version ouverte et suppression des fiches
 
-La version effectivement ouverte est affichée en haut de la fenêtre. Si une autre version fonctionne encore, le nouveau lanceur vous demande de cliquer sur **Quitter BIOME** dans cette ancienne fenêtre, puis de relancer la nouvelle version. Fermer uniquement la fenêtre peut laisser le serveur local actif.
+La version effectivement ouverte est affichée en haut de la fenêtre. Si une autre version fonctionne encore, le nouveau lanceur vous demande de cliquer sur **Quitter BIOME** dans cette ancienne fenêtre, puis de relancer la nouvelle version. Cet avertissement concerne les anciennes versions ; depuis alpha.9, fermer la dernière fenêtre dédiée arrête BIOME.
 
 Dans **Contacts**, cliquez sur **Supprimer…**. Une fiche inutilisée peut être retirée après confirmation. Si elle est associée à des projets, la liste des projets concernés est affichée et une fiche de remplacement du même type est obligatoire. Créez-la d’abord si nécessaire. Le bouton **Réattribuer et supprimer** met à jour les noms et l’email du contact dans les projets, puis retire l’ancienne fiche. Les bilans utilisent les nouvelles attributions. Les notes, livraisons et historiques sont conservés. Les projets dans la corbeille restent inchangés ; leur restauration peut réintroduire une ancienne fiche.
+
+### Fermer BIOME
+
+Fermez la fenêtre dédiée avec sa croix habituelle. Fermer la dernière fenêtre BIOME arrête le programme et libère son verrou. Si plusieurs fenêtres BIOME sont ouvertes, le programme reste actif jusqu’à la fermeture de la dernière. Une copie ou un enregistrement déjà en cours côté serveur se termine avant l’arrêt. **Quitter BIOME** reste une alternative et ferme aussi les fenêtres de l’application.
+
+Actualiser la page ou réduire la fenêtre ne déclenche pas l’arrêt. Ce fonctionnement concerne le lancement normal de l’application ; les lancements explicites sans fenêtre restent actifs jusqu’à leur arrêt. Pour cette première mise à jour depuis une ancienne version, quittez encore l’ancienne instance avant de lancer la nouvelle.

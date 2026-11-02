@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import sys
 import time
-from app_window import open_window
+from app_window import ApplicationWindows
 import traceback
 from app_version import VERSION
 
@@ -50,7 +50,11 @@ def main():
                         import ctypes
                         ctypes.windll.user32.MessageBoxW(None,message,'BIOME — autre version ouverte',0x30)
                     return 2
-                if not args.no_browser:open_window(url,state)
+                if not args.no_browser:
+                    import urllib.request
+                    token=(state/'.local-session-token').read_text(encoding='utf-8').strip()
+                    request=urllib.request.Request(url+'api/open-window',data=b'{}',headers={'X-Biome-Token':token,'Content-Type':'application/json'})
+                    with urllib.request.urlopen(request,timeout=15) as response:response.read()
                 return 0
             except (OSError,ValueError,KeyError):time.sleep(.1)
         raise RuntimeError('BIOME démarre déjà. Réessayez dans quelques secondes.')
@@ -76,11 +80,13 @@ def main():
         log=(state/'application.log').open('a',encoding='utf-8',buffering=1)
         previous_stderr=sys.stderr
         sys.stderr=log
+        windows=None if args.no_browser else ApplicationWindows(state,'')
         def ready(port):
             url='http://127.0.0.1:'+str(port)+'/'
             store.write_json(state/'instance.json',{'url':url,'pid':os.getpid(),'version':VERSION})
-            if not args.no_browser:open_window(url,state)
-        try:server.serve(root,args.port,settings,state_dir=state,on_ready=ready,desktop=True,startup_warning=warning,catalogue_required=catalogue_required)
+            if windows:
+                windows.url=url;windows.open()
+        try:server.serve(root,args.port,settings,state_dir=state,on_ready=ready,desktop=True,startup_warning=warning,catalogue_required=catalogue_required,window_manager=windows)
         finally:sys.stderr=previous_stderr;log.close()
     finally:
         (state/'instance.json').unlink(missing_ok=True)

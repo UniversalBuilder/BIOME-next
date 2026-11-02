@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-alpha.9 — 2026-11-02
+
+- Stop the desktop application when its last dedicated window closes, after any active server operation finishes.
+- Track only session-owned browser windows, with a startup allowance and a brief closure grace period.
+- Reopen additional windows through the running application so their lifetime is tracked correctly.
+- Use isolated temporary browser sessions and disable background mode; keep headless/server usage unchanged.
+
 ## 3.0.0-alpha.8 — 2026-11-02
 
 - Create a named, separate project data folder from the Files tab, with 01_raw, 02_processed, 03_results and a bilingual identifying README.

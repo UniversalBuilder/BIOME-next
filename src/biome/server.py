@@ -7,7 +7,7 @@ import data_store as store
 
 HERE = Path(__file__).resolve().parent
 
-def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,startup_warning=None,catalogue_required=False):
+def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,startup_warning=None,catalogue_required=False,window_manager=None):
     try: store.recover(root)
     except store.EntryConflict: pass  # Both versions have been preserved; do not prevent reading the project.
     token_path=(Path(state_dir) if state_dir else HERE)/'.local-session-token'
@@ -121,10 +121,14 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             if route=='/api/shutdown' and desktop:
                 if self.headers.get('X-Biome-Token')!=token: return self.send(403,'{}')
                 self.send(200,'{}');threading.Thread(target=httpd.shutdown,daemon=True).start();return
-            if route not in ['/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
+            if route not in ['/api/open-window','/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
             if self.headers.get('X-Biome-Token')!=token:
                 return self.send(403,json.dumps({'error':'Cette page utilise une ancienne session. Copiez votre note, puis rechargez la page.'}))
             try:
+                if route=='/api/open-window':
+                    if window_manager is None:raise ValueError('Cette session a été lancée sans fenêtre d’application.')
+                    window_manager.open()
+                    return self.send(200,json.dumps({'opened':True}))
                 root=self.selected_project()
                 size=int(self.headers.get('Content-Length','0'))
                 limit = 140_000_000 if route in ['/api/entries','/api/projects'] else 70_000_000 if route in ['/api/import-preview','/api/request-preview'] else 35_000_000
@@ -242,9 +246,13 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             except Exception as e: self.send(500,json.dumps({'error':str(e)}))
     httpd=HTTPServer(('127.0.0.1',port),Handler)
     print(f'BIOME prototype: http://127.0.0.1:{httpd.server_port}',flush=True)
-    if on_ready: on_ready(httpd.server_port)
-    try: httpd.serve_forever()
-    finally: httpd.server_close()
+    try:
+        if on_ready:on_ready(httpd.server_port)
+        if window_manager:window_manager.start(httpd.shutdown)
+        httpd.serve_forever()
+    finally:
+        httpd.server_close()
+        if window_manager:window_manager.close()
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser()
