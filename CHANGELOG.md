@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-alpha.10 — 2026-11-02
+
+- Edit the project date and optional known activity date for historical and current projects.
+- Offer a valid date found at the start of an original folder name or project title for explicit confirmation.
+- Preserve import timestamps and source metadata; allow incomplete historical contacts to remain unknown.
+- Do not count administrative information corrections as recent activity or create report sessions from date metadata.
+- Use confirmed project dates in catalogue sorting, future data-folder suggestions and frozen delivery summaries.
+
 ## 3.0.0-alpha.9 — 2026-11-02
 
 - Stop the desktop application when its last dedicated window closes, after any active server operation finishes.

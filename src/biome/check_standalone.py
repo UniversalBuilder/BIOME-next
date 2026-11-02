@@ -61,6 +61,9 @@ def run(executable,msg=None):
             post('api/deliveries'+query,{'files':[selected['file']],'display_labels':{selected['file']:'Synthetic delivery note'},'revisions':{selected['file']:selected['revision']},'note':'Packaged selector smoke test'})
             project=get('api/project'+query)
             assert project['deliveries'][-1]['selection'][0]['title']=='Synthetic delivery note'
+            post('api/project-info'+query,{'title':'Standalone synthetic','contact':'Example person','group':'','contact_email':'','project_date':'2020-03-24','known_activity_date':''})
+            assert get('api/project'+query)['dates']['project_date']=='2020-03-24'
+            assert get('api/projects')[0]['created_at']=='2020-03-24'
             data_parent=base/'Original data';data_parent.mkdir()
             suggestion=get('api/project'+query)['data_folder']['suggested_name']
             folder=post('api/create-data-folder'+query,{'parent':str(data_parent),'name':suggestion})

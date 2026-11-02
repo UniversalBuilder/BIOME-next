@@ -18,7 +18,8 @@ def slug(value, limit):
 
 def folder_info(root):
     project = load(root/'biome.json')
-    date = str(project.get('created_at', ''))[:10]
+    from project_dates import project_date_value
+    date = str(project_date_value(project) or '')[:10]
     try: datetime.strptime(date, '%Y-%m-%d')
     except ValueError:
         match = re.match(r'^\d{4}-\d{2}-\d{2}', root.name)

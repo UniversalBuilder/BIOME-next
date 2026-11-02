@@ -206,7 +206,11 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                 if route=='/api/directory-remove': return self.send(200,json.dumps(store.remove_directory_item(initial,data),ensure_ascii=False))
                 if route=='/api/directory': return self.send(201,json.dumps(store.add_directory_item(initial,data),ensure_ascii=False))
                 if route=='/api/vocabularies': return self.send(200,json.dumps(store.edit_vocabulary(initial,data),ensure_ascii=False))
-                if route=='/api/project-info': return self.send(200,json.dumps(store.update_project_info(root,store.bind_directory(initial,data)),ensure_ascii=False))
+                if route=='/api/project-info':
+                    from project_dates import checked_date_fields
+                    checked_date_fields(data)
+                    allow_unknown=store.load(root/'biome.json')['format_version']=='1.1'
+                    return self.send(200,json.dumps(store.update_project_info(root,store.bind_directory(initial,data,allow_unknown_contact=allow_unknown)),ensure_ascii=False))
                 if route=='/api/framing': return self.send(200,json.dumps(store.update_framing(root,data),ensure_ascii=False))
                 if route=='/api/projects': return self.send(201,json.dumps(store.create_project(initial,data),ensure_ascii=False))
                 if route=='/api/request-preview': return self.send(200,json.dumps(store.preview_request(data),ensure_ascii=False))

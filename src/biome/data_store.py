@@ -44,6 +44,7 @@ def preserve_entry_conflict(root, entry, draft):
             'missing':raw is None}
 
 def read_project(root):
+    from project_dates import date_metadata
     from data_folders import folder_info
     entries = load(root/'records/entries.json')
     for entry in entries:
@@ -58,7 +59,7 @@ def read_project(root):
     return {'project': load(root/'biome.json'), 'entries': entries, 'logs': logs,
             'unlinked_files':[file for file in load(root/'records/versions.json') if file['id'] not in linked],
             'datasets':[dict(item,resolved_location=str(dataset_path(root,item)) if item.get('storage')=='project' else item['location']) for item in load(root/'records/datasets.json')],
-            'data_folder':folder_info(root),'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
+            'dates':date_metadata(root,load(root/'biome.json')),'data_folder':folder_info(root),'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
             'total_minutes': sum(x['minutes'] for x in logs), 'historical_time_unknown': True}
 
 def delivery_files(root):
@@ -121,6 +122,8 @@ def make_delivery(root,data):
         event=load(path);previous=event['previous'];updated=event['updated']
         history.append({'date':event['date'],'status':updated['status']['value'],'framing':updated.get('framing',{})})
     snapshot={'status':project['status']['value'],'framing':project.get('framing',{}),'history':sorted(history,key=lambda event:event['date'])}
+    from project_dates import date_metadata
+    snapshot['dates']={key:value for key,value in date_metadata(root,project).items() if key in ['project_date','known_activity_date']}
     item['project_snapshot']=snapshot
     manifest=dict(item);manifest['checksums']={}
     esc=html.escape
@@ -132,6 +135,7 @@ def make_delivery(root,data):
         page.append('<li><a href="'+quote(name,safe='/')+'">'+esc(label)+'</a><small>'+esc(context)+' — '+esc(origin.get('name',source.name))+'</small></li>')
     page+=['</ul><h2>Cadrage au moment de la livraison</h2>']
     statuses={'Intake':'À cadrer','Active':'En cours','Review':'En validation','Completed':'Terminé','OnHold':'En pause'}
+    page.append('<p>Date du projet : '+esc(snapshot['dates']['project_date'] or 'Non renseignée')+'</p>')
     page.append('<p>Statut : '+esc(statuses.get(snapshot['status'],snapshot['status']))+'</p>')
     for key,label in [('objective','Objectif convenu'),('deliverable','Livrable convenu'),('next_step','Prochaine étape à cette date'),('validation','Validation / critères d’acceptation')]:
         page+=['<h3>'+label+'</h3><pre>'+esc(snapshot['framing'].get(key) or 'Non renseigné')+'</pre>']
@@ -402,18 +406,22 @@ def recover(root):
     pending.unlink()
 
 def update_project_info(root,data):
-    fields={}
+    from project_dates import checked_date_fields
+    fields=checked_date_fields(data)
+    project=load(root/'biome.json')
     for key in ['title','contact','group','contact_email']:
         value=data.get(key,'')
         if not isinstance(value,str) or len(value)>(254 if key=='contact_email' else 200): raise ValueError('Informations invalides ou trop longues')
         fields[key]=value.strip()
-    if not fields['title'] or not fields['contact']: raise ValueError('Titre et contact requis')
+    if not fields['title']:raise ValueError('Titre requis')
+    if not fields['contact'] and project['format_version']!='1.1':raise ValueError('Contact requis pour ce format de projet')
     if fields['contact_email'] and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',fields['contact_email']): raise ValueError('Adresse email invalide')
     project=load(root/'biome.json')
     for key in ['contact_id','group_id']:
         if key in data: fields[key]=data[key]
     if all(project.get(key,'')==value for key,value in fields.items()): return project
-    updated={**project,**fields,'updated_at':datetime.now().astimezone().isoformat()}
+    stamp=datetime.now().astimezone().isoformat()
+    updated={**project,**fields,'updated_at':stamp,'info_updated_at':stamp}
     write_json(root/'records/pending-info.json',{'id':'info-'+uuid.uuid4().hex,'previous':project,'updated':updated})
     recover_project_info(root)
     return updated
@@ -424,7 +432,9 @@ def recover_project_info(root):
     record=load(pending);folder=root/'records/project-history';folder.mkdir(exist_ok=True)
     write_json(folder/(record['id']+'.json'),record)
     project=record['updated'];write_json(root/'biome.json',project)
-    lines=['# Project information','','Title: '+project['title'],'','Contact: '+project['contact'],'','Email: '+project.get('contact_email',''),'','Group: '+project.get('group',''),'','Updated: '+project['updated_at'],'']
+    from project_dates import date_metadata
+    dates=date_metadata(root,project)
+    lines=['# Project information','','Title: '+project['title'],'','Contact: '+project['contact'],'','Email: '+project.get('contact_email',''),'','Group: '+project.get('group',''),'','Project date: '+(dates['project_date'] or 'Unknown'),'','Known activity date: '+(dates['known_activity_date'] or 'Unknown'),'','Updated: '+project['updated_at'],'']
     atomic(root/'records/project-info.md','\n'.join(lines))
     pending.unlink()
 
@@ -610,12 +620,12 @@ def edit_vocabulary(initial,data):
     recover_vocabularies(initial)
     return records
 
-def bind_directory(initial,data):
+def bind_directory(initial,data,*,allow_unknown_contact=False):
     for key in ['contact','group']:
         if not isinstance(data.get(key,''),str) or len(data.get(key,''))>200: raise ValueError('Nom invalide')
     email=data.get('contact_email',data.get('email',''))
     if not isinstance(email,str) or len(email)>254 or (email and not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+',email)): raise ValueError('Adresse email invalide')
-    if not data.get('contact','').strip() or not isinstance(data.get('title'),str) or not data['title'].strip() or len(data['title'])>200: raise ValueError('Titre et contact requis')
+    if (not allow_unknown_contact and not data.get('contact','').strip()) or not isinstance(data.get('title'),str) or not data['title'].strip() or len(data['title'])>200: raise ValueError('Titre et contact requis')
     records=directory(initial)
     result=dict(data)
     for kind,key in [('groups','group'),('contacts','contact')]:
@@ -684,11 +694,15 @@ def project_overview(path,key):
     project=load(path/'biome.json');entries=load(path/'records/entries.json')
     dates=[datetime.strptime(e['date_source'],'%d/%m/%Y %H:%M:%S') for e in entries]
     legacy=project.get('legacy_import')
-    created=project.get('created_at') if not legacy else legacy.get('source_created_at')
-    if legacy and legacy.get('source_last_updated'):
-        value=datetime.fromisoformat(legacy['source_last_updated'].replace('Z','+00:00'))
+    from project_dates import project_date_value,activity_date_value
+    created=project_date_value(project)
+    known_activity=activity_date_value(project)
+    if known_activity:
+        value=datetime.fromisoformat(known_activity.replace('Z','+00:00'))
         dates.append(value.astimezone().replace(tzinfo=None) if value.tzinfo else value)
-    if project.get('updated_at'): dates.append(datetime.fromisoformat(project['updated_at']).astimezone().replace(tzinfo=None))
+    if project.get('updated_at') and project.get('updated_at')!=project.get('info_updated_at'):dates.append(datetime.fromisoformat(project['updated_at']).astimezone().replace(tzinfo=None))
+    framing_date=project.get('status',{}).get('updated_at')
+    if framing_date:dates.append(datetime.fromisoformat(framing_date.replace('Z','+00:00')).astimezone().replace(tzinfo=None))
     for item in load(path/'records/datasets.json'):
         if item.get('receipt') and item.get('created_at'):
             dates.append(datetime.fromisoformat(item['created_at']).astimezone().replace(tzinfo=None))

@@ -32,6 +32,8 @@ def validate_project(project):
             raise ValueError('Timezone required')
     except (KeyError, AttributeError, TypeError, ValueError):
         raise ValueError('Date de création invalide ou sans fuseau horaire.')
+    from project_dates import checked_date_fields
+    checked_date_fields(project)
     if 'framing' in project:
         framing = project['framing']
         if not isinstance(framing, dict):

@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.9 · Windows x64 · November 2, 2026
+3.0.0-alpha.10 · Windows x64 · November 2, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,7 +25,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.9.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.9), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.10.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.10), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Close the dedicated window to quit BIOME; **Quitter BIOME** is also available.
 
@@ -192,3 +192,15 @@ In **Contacts**, click **Supprimer…**. Unused records can be removed after con
 Close the dedicated window with its usual close button. Closing the last BIOME window stops the application and releases its lock. If more than one BIOME window is open, the application stays active until the last one closes. An active server-side copy or save finishes before shutdown. **Quitter BIOME** remains an alternative and closes the application windows too.
 
 Refreshing a page, minimizing the window or using a different tab does not trigger shutdown. This behavior applies to the normal desktop launcher; explicitly headless/server launches remain active until stopped. The first update from an older release still requires quitting that old instance before launching this one.
+
+### Correct project dates and incomplete historical information
+
+In **Modifier les informations**, edit **Date du projet** and, if useful, **Dernière activité connue (facultatif)**. This works for historical imports and current projects. A 1.1 project can keep an unknown contact or group while you correct its dates. Leave a date blank to mark it as unknown.
+
+When an original folder name or title starts with a valid date, BIOME offers **Utiliser le…**. This is a proposal requiring your confirmation; the import date is never substituted for a missing historical project date. The project list uses the confirmed date and its date column remains sortable.
+
+The known activity date supplements incomplete history. A later documented session, receipt or framing update remains authoritative. Editing the information itself no longer makes the project recently active. These fields create neither sessions nor recorded time, so the activity report remains based on dated notebook/work records. Correct a wrong session date in the corresponding notebook entry.
+
+Original imported metadata and the technical creation timestamp remain preserved in the correction history. Existing project/data folders and past delivery archives are unchanged. Future data-folder suggestions and delivery summaries use the corrected project date.
+
+![Editable dates on a historical project](images/27-project-dates.jpg)

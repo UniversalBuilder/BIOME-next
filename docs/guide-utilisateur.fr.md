@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.9 · Windows · 2 novembre 2026
+Version 3.0.0-alpha.10 · Windows · 2 novembre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.9), téléchargez `BIOME-Windows-portable-3.0.0-alpha.9.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.10), téléchargez `BIOME-Windows-portable-3.0.0-alpha.10.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. Fermez la fenêtre dédiée pour quitter BIOME ; le bouton **Quitter BIOME** reste aussi disponible.
 
@@ -226,3 +226,15 @@ Dans **Contacts**, cliquez sur **Supprimer…**. Une fiche inutilisée peut êtr
 Fermez la fenêtre dédiée avec sa croix habituelle. Fermer la dernière fenêtre BIOME arrête le programme et libère son verrou. Si plusieurs fenêtres BIOME sont ouvertes, le programme reste actif jusqu’à la fermeture de la dernière. Une copie ou un enregistrement déjà en cours côté serveur se termine avant l’arrêt. **Quitter BIOME** reste une alternative et ferme aussi les fenêtres de l’application.
 
 Actualiser la page ou réduire la fenêtre ne déclenche pas l’arrêt. Ce fonctionnement concerne le lancement normal de l’application ; les lancements explicites sans fenêtre restent actifs jusqu’à leur arrêt. Pour cette première mise à jour depuis une ancienne version, quittez encore l’ancienne instance avant de lancer la nouvelle.
+
+### Corriger les dates et compléter une fiche historique
+
+Dans **Modifier les informations**, renseignez **Date du projet** et, si utile, **Dernière activité connue (facultatif)**. Ces champs fonctionnent pour les projets historiques et actuels. Une fiche au format 1.1 peut conserver un contact ou groupe inconnu pendant la correction des dates. Laissez une date vide pour indiquer qu’elle n’est pas connue.
+
+Si le dossier d’origine ou le titre commence par une date valide, BIOME propose **Utiliser le…**. La proposition doit être confirmée ; la date d’import ne remplace jamais automatiquement une date historique absente. La liste affiche la date confirmée et sa colonne reste triable.
+
+La dernière activité connue complète un historique incomplet. Une séance, une réception ou une mise à jour du cadrage plus récente reste prioritaire. La correction des informations ne rend plus le projet artificiellement récent. Ces champs ne créent ni séance ni temps de travail : le bilan reste fondé sur les entrées et temps datés. Corrigez une date de séance erronée dans l’entrée correspondante du cahier.
+
+Les données importées d’origine et l’horodatage technique de création restent conservés dans l’historique des corrections. Les dossiers existants et les anciennes livraisons ne sont pas modifiés. Les prochaines propositions de dossier de données et les prochaines synthèses de livraison utilisent la date du projet corrigée.
+
+![Dates modifiables sur une fiche historique](images/27-project-dates.jpg)
