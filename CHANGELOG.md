@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-alpha.8 — 2026-11-02
+
+- Create a named, separate project data folder from the Files tab, with 01_raw, 02_processed, 03_results and a bilingual identifying README.
+- Show direct actions to open the data folder and originals, and prefill 01_raw when receiving new images.
+- Keep existing linked locations unchanged; reject overwrites, invalid names and catalogue overlaps.
+- Test persistent folder linking, original reception, HTTP authentication and the compiled application workflow.
+
 ## 3.0.0-alpha.7 — 2026-10-26
 
 - Show the actual running version and prevent the new launcher from silently reopening a different release already running.

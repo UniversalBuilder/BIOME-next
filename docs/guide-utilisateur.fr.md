@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.7 · Windows · 26 octobre 2026
+Version 3.0.0-alpha.8 · Windows · 2 novembre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,7 +25,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.7), téléchargez `BIOME-Windows-portable-3.0.0-alpha.7.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.8), téléchargez `BIOME-Windows-portable-3.0.0-alpha.8.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. **Quitter BIOME** arrête le service local ; utilisez ce bouton lorsque vous avez terminé.
 
@@ -108,6 +108,18 @@ Les pièces jointes peuvent être téléchargées ou retrouvées dans leur entr�
 ### Recevoir des originaux depuis un transfert temporaire
 
 Choisissez **Recevoir un fichier ou un dossier…**, sélectionnez la source téléchargée et nommez le jeu d’images. Préparez la réception, choisissez un stockage durable séparé du catalogue, puis lancez la copie. BIOME vérifie la copie par empreintes et conserve un reçu avec sa provenance. La source est conservée. Pour un nouveau catalogue, les originaux ne sont pas copiés dans le dossier documentaire.
+
+### Créer et ouvrir le dossier de données du projet
+
+Dans **Fichiers → Dossier de données du projet**, cliquez sur **Créer le dossier du projet…**. Choisissez ou collez le chemin d’un dossier parent existant, hors du catalogue, puis vérifiez le nom proposé. Il réunit la date de création du projet, le groupe, le contact, le titre et un identifiant court ; vous pouvez le raccourcir. Validez avec **Créer et lier ce dossier**.
+
+BIOME crée `01_raw` pour les originaux intacts, `02_processed` pour les images transformées et étapes intermédiaires, `03_results` pour les résultats, et un `README.txt` bilingue permettant d’identifier le projet sans BIOME. Aucun dossier existant n’est écrasé. Pour réutiliser un emplacement, choisissez **Lier un emplacement existant…** : son contenu et son organisation restent inchangés.
+
+Les boutons **Ouvrir le dossier du projet** et **Ouvrir 01_raw** donnent un accès direct dans l’Explorateur. **Recevoir des images dans 01_raw** reprend automatiquement cette destination pour la copie vérifiée. Chaque réception crée un sous-dossier séparé et conserve la source téléchargée. Vous pouvez aussi déposer manuellement des originaux dans `01_raw` ; ces fichiers n’ont alors pas de reçu de copie BIOME. Référencez séparément les données transformées ou les résultats pour les proposer dans une livraison.
+
+Le catalogue conserve le cahier, les pièces jointes et les livraisons. Ces dossiers de données externes ne sont pas inclus dans sa sauvegarde : sauvegardez-les séparément. Renommer le projet ne renomme ni ne déplace son dossier externe.
+
+![Dossier de données du projet et accès directs](images/26-project-data-folder.jpg)
 
 ![Réception des originaux et choix du stockage durable](images/11-receive-originals.jpg)
 

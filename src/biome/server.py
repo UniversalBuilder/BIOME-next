@@ -121,7 +121,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             if route=='/api/shutdown' and desktop:
                 if self.headers.get('X-Biome-Token')!=token: return self.send(403,'{}')
                 self.send(200,'{}');threading.Thread(target=httpd.shutdown,daemon=True).start();return
-            if route not in ['/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
+            if route not in ['/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
             if self.headers.get('X-Biome-Token')!=token:
                 return self.send(403,json.dumps({'error':'Cette page utilise une ancienne session. Copiez votre note, puis rechargez la page.'}))
             try:
@@ -210,6 +210,14 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                 if route=='/api/receive-data':
                     from data_receipts import receive_data
                     return self.send(201,json.dumps(receive_data(root,data),ensure_ascii=False))
+                if route=='/api/create-data-folder':
+                    from data_folders import create_data_folder
+                    return self.send(201,json.dumps(create_data_folder(root,data),ensure_ascii=False))
+                if route=='/api/open-project-data-folder':
+                    from data_folders import project_data_path
+                    path=project_data_path(root,data.get('id'))
+                    subprocess.Popen(['explorer.exe',str(path)])
+                    return self.send(200,json.dumps({'opened':True}))
                 if route=='/api/open-dataset':
                     from data_receipts import dataset_path
                     item=next((item for item in store.load(root/'records/datasets.json') if item['id']==data.get('id')),None)

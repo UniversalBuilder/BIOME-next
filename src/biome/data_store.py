@@ -44,6 +44,7 @@ def preserve_entry_conflict(root, entry, draft):
             'missing':raw is None}
 
 def read_project(root):
+    from data_folders import folder_info
     entries = load(root/'records/entries.json')
     for entry in entries:
         entry['revision']=entry_revision(root,entry)
@@ -57,7 +58,7 @@ def read_project(root):
     return {'project': load(root/'biome.json'), 'entries': entries, 'logs': logs,
             'unlinked_files':[file for file in load(root/'records/versions.json') if file['id'] not in linked],
             'datasets':[dict(item,resolved_location=str(dataset_path(root,item)) if item.get('storage')=='project' else item['location']) for item in load(root/'records/datasets.json')],
-            'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
+            'data_folder':folder_info(root),'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
             'total_minutes': sum(x['minutes'] for x in logs), 'historical_time_unknown': True}
 
 def delivery_files(root):
@@ -257,6 +258,8 @@ def add_dataset(root,data):
           'storage':'external','description':str(data.get('description','')).strip()[:4000],
           'access_state':'not_checked','created_at':datetime.now().astimezone().isoformat()}
     if existing:
+        if location!=existing['location'] or role!='original':
+            existing.pop('data_folder_root',None);existing.pop('folder_layout',None)
         item['created_at']=existing.get('created_at',item['created_at'])
         item['edited_at']=datetime.now().astimezone().isoformat()
         item['storage']=existing.get('storage','external')

@@ -61,9 +61,19 @@ def run(executable,msg=None):
             post('api/deliveries'+query,{'files':[selected['file']],'display_labels':{selected['file']:'Synthetic delivery note'},'revisions':{selected['file']:selected['revision']},'note':'Packaged selector smoke test'})
             project=get('api/project'+query)
             assert project['deliveries'][-1]['selection'][0]['title']=='Synthetic delivery note'
+            data_parent=base/'Original data';data_parent.mkdir()
+            suggestion=get('api/project'+query)['data_folder']['suggested_name']
+            folder=post('api/create-data-folder'+query,{'parent':str(data_parent),'name':suggestion})
+            raw_folder=Path(folder['location'])
+            assert raw_folder.is_dir() and (raw_folder.parent/'02_processed').is_dir() and (raw_folder.parent/'README.txt').is_file()
+            assert get('api/project'+query)['data_folder']['default_raw']==str(raw_folder)
+            received_source=base/'synthetic-raw.tif';received_source.write_bytes(b'Synthetic original')
+            prepared=post('api/receive-preview'+query,{'source':str(received_source)})
+            received=post('api/receive-data'+query,{**prepared,'storage':'external','destination':str(raw_folder)})
+            assert (Path(received['location'])/received_source.name).read_bytes()==received_source.read_bytes()
             source=base/'external.txt';source.write_text('Synthetic external data',encoding='utf-8')
             post('api/datasets'+query,{'name':'Synthetic external','location':str(source),'role':'reference'})
-            result=get('api/diagnostics');assert result['errors']==0 and result['locations'][0]['state']=='accessible',result
+            result=get('api/diagnostics');assert result['errors']==0 and all(x['state']=='accessible' for x in result['locations']),result
             report=get('api/activity-report?year=2026')
             assert report['projects_with_time']==1
             assert report['breakdowns']['group']['excluded']==1

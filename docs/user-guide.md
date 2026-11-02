@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.7 · Windows x64 · October 26, 2026
+3.0.0-alpha.8 · Windows x64 · November 2, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,7 +25,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.7.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.7), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.8.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.8), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Use **Quitter BIOME** to stop the local application service when finished.
 
@@ -88,6 +88,18 @@ Saved Markdown notes can be edited externally. Refresh to read those changes. If
 ![Linked data and notebook files](images/09-files.jpg)
 
 **Recevoir un fichier ou un dossier…** prepares a verified copy of downloaded originals into durable storage separate from the catalogue. Select the source, name the dataset, prepare the receipt and choose the destination. BIOME verifies copied content by hashes, keeps a provenance receipt and preserves the source. New catalogues keep original-data storage separate.
+
+### Create and open a project data folder
+
+In **Fichiers → Dossier de données du projet**, choose **Créer le dossier du projet…**, select or paste an existing parent folder outside the catalogue, and check the proposed name. The name combines the project creation date, group, contact, title and a short identifier; it can be shortened. Confirm **Créer et lier ce dossier**.
+
+BIOME creates `01_raw` for unchanged originals, `02_processed` for intermediate/transformed images, `03_results` for analysis outputs, and a bilingual `README.txt` identifying the project without BIOME. Existing folders are never overwritten. To reuse a folder, choose **Lier un emplacement existant…** instead; its contents and organization remain unchanged.
+
+Use **Ouvrir le dossier du projet** or **Ouvrir 01_raw** for direct Explorer access. **Recevoir des images dans 01_raw** prefills the verified-copy destination. Each reception creates a separate subfolder and preserves the downloaded source. You can also deposit originals manually in `01_raw`; manually deposited files do not have a BIOME copy receipt. Link processed data or results separately when you want them available as delivery choices.
+
+The catalogue retains notes, attachments and delivery snapshots. These external data folders are not included in catalogue backups; back them up separately. Renaming the project later does not rename or move the external folder.
+
+![Project data folder and direct actions](images/26-project-data-folder.jpg)
 
 ![Verified original-data receipt](images/11-receive-originals.jpg)
 
