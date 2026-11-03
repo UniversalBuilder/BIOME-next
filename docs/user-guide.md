@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.12 · Windows x64 · November 3, 2026
+3.0.0-alpha.13 · Windows x64 · November 3, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -25,6 +25,14 @@ Hover over an action, or focus it with the keyboard, to read its tooltip. Press 
 The principal workspace screenshots were refreshed for alpha.12. Some detailed workflow captures retain earlier styling; their control names and documented actions remain applicable.
 
 
+## Independent time and report scope
+
+Inside a project, **Temps & bilan** provides a reversible exclusion from all report indicators and dated time records without notebook entries. Independent time is added to notebook time; historical estimates remain labelled and belong to their chosen attachment date. Unknown time is not recorded as zero. Missing groups, contacts and categories are omitted only from calculations requiring those fields. Reports and exports explain the included and excluded populations.
+
+![Project controls for independent time and report exclusions](images/30-project-time-scope.jpg)
+
+![Report scope, unknown durations and explicit zeros](images/31-report-population.jpg)
+
 ## Workflow and storage
 
 **Request → project → retained originals → scope → notebook and experiments → delivery → activity report.**
@@ -42,7 +50,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.12.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.12), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.13.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.13), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Close the dedicated window to quit BIOME; **Quitter BIOME** is also available.
 

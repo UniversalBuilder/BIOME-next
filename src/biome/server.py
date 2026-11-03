@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 
 def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,startup_warning=None,catalogue_required=False,window_manager=None):
     try: store.recover(root)
-    except store.EntryConflict: pass  # Both versions have been preserved; do not prevent reading the project.
+    except (store.EntryConflict,store.AccountingConflict): pass  # Both versions have been preserved; do not prevent reading the project.
     token_path=(Path(state_dir) if state_dir else HERE)/'.local-session-token'
     if not token_path.exists(): store.atomic(token_path,uuid.uuid4().hex)
     token=token_path.read_text(encoding='utf-8').strip()
@@ -45,7 +45,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                 elif route=='/favicon.ico':
                     raw=(HERE/'favicon.ico').read_bytes()
                     self.send_response(200);self.send_header('Content-Type','image/x-icon');self.send_header('Content-Length',str(len(raw)));self.send_header('Cache-Control','no-cache');self.end_headers();self.wfile.write(raw)
-                elif route in ['/interface.css','/interface.js']:
+                elif route in ['/interface.css','/interface.js','/accounting.js']:
                     filename=route[1:]
                     self.send(200,(HERE/filename).read_text(encoding='utf-8'),'text/css; charset=utf-8' if filename.endswith('.css') else 'application/javascript; charset=utf-8')
                 elif route in {f'/fonts/roboto-latin-{weight}-normal.woff2' for weight in [400,500,600,700]}:
@@ -127,7 +127,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             if route=='/api/shutdown' and desktop:
                 if self.headers.get('X-Biome-Token')!=token: return self.send(403,'{}')
                 self.send(200,'{}');threading.Thread(target=httpd.shutdown,daemon=True).start();return
-            if route not in ['/api/open-window','/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
+            if route not in ['/api/accounting','/api/open-window','/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
             if self.headers.get('X-Biome-Token')!=token:
                 return self.send(403,json.dumps({'error':'Cette page utilise une ancienne session. Copiez votre note, puis rechargez la page.'}))
             try:
@@ -195,6 +195,8 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                             entry=next((item for item in store.load(root/'records/entries.json') if item['id']==data['edit_id']),None)
                             if entry: raise store.EntryConflict(store.preserve_entry_conflict(root,entry,data))
                         raise
+                if route=='/api/accounting':
+                    return self.send(200,json.dumps(store.save_accounting(root,data),ensure_ascii=False))
                 if route=='/api/backup':
                     from backups import create_backup
                     return self.send(201,json.dumps(create_backup(initial.parent,data.get('destination')),ensure_ascii=False))
@@ -251,7 +253,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                     return self.send(200,result.stdout.strip())
                 item=store.make_delivery(root,data) if route=='/api/deliveries' else store.add_dataset(root,data) if route=='/api/datasets' else store.add_entry(root,data)
                 self.send(201,json.dumps(item))
-            except store.EntryConflict as e: self.send(409,json.dumps(e.payload,ensure_ascii=False))
+            except (store.EntryConflict,store.AccountingConflict) as e: self.send(409,json.dumps(e.payload,ensure_ascii=False))
             except (ValueError,KeyError,TypeError) as e: self.send(400,json.dumps({'error':str(e)}))
             except Exception as e: self.send(500,json.dumps({'error':str(e)}))
     httpd=HTTPServer(('127.0.0.1',port),Handler)

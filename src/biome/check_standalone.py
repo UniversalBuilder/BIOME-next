@@ -36,7 +36,7 @@ def run(executable,msg=None):
                 assert response.headers['Content-Type']=='image/x-icon' and response.read()[:4]==b'\x00\x00\x01\x00'
             # Check packaged UI/font assets as well as backend functionality.
             source=Path(__file__).resolve().parent
-            for asset,mime in [('interface.css','text/css'),('interface.js','application/javascript')]+[(f'fonts/roboto-latin-{weight}-normal.woff2','font/woff2') for weight in [400,500,600,700]]:
+            for asset,mime in [('interface.css','text/css'),('interface.js','application/javascript'),('accounting.js','application/javascript')]+[(f'fonts/roboto-latin-{weight}-normal.woff2','font/woff2') for weight in [400,500,600,700]]:
                 with urllib.request.urlopen(url+asset,timeout=10) as response:
                     assert response.headers['Content-Type'].startswith(mime)
                     assert hashlib.sha256(response.read()).digest()==hashlib.sha256((source/asset).read_bytes()).digest(),asset
@@ -94,6 +94,16 @@ def run(executable,msg=None):
             with zipfile.ZipFile(io.BytesIO(packed)) as archive:
                 assert archive.read('activity-report.pdf').startswith(b'%PDF')
                 assert 'coverage.csv' in archive.namelist()
+            # Independent time and explicit report scope survive in the packaged application.
+            accounting=get('api/project'+query)
+            saved=post('api/accounting'+query,{'action':'save','base_revision':accounting['work_revision'],'date':'2026-03-02','minutes':150,'estimate':True,'description':'Standalone historical estimate'})
+            independent=next(log for log in saved['logs'] if log.get('source')=='manual')
+            assert get('api/activity-report?year=2026')['estimated_minutes']==150
+            hidden=post('api/accounting'+query,{'action':'scope','base_revision':saved['work_revision'],'excluded':True,'reason':'Standalone scope check'})
+            excluded=get('api/activity-report?year=2026');assert excluded['projects']==[] and len(excluded['excluded_projects'])==1
+            included=post('api/accounting'+query,{'action':'scope','base_revision':hidden['work_revision'],'excluded':False,'reason':''})
+            post('api/accounting'+query,{'action':'delete','base_revision':included['work_revision'],'id':independent['id']})
+            assert get('api/activity-report?year=2026')['estimated_minutes']==0
             if msg:
                 imported=post('api/import-preview',{'name':msg.name,'content':base64.b64encode(msg.read_bytes()).decode()})
                 assert imported['text'] and imported['date'] and len(imported['images'])==5

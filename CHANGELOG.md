@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0-alpha.13 — 2026-11-03
+
+- Add a reversible, project-level exclusion from all activity report indicators, with an optional reason.
+- Add dated independent time records without creating notebook entries, including labelled historical estimates.
+- Preserve corrections and removed time records in an audit history; reject stale changes and recover interrupted writes without duplicating time.
+- Keep unknown durations distinct from explicit zeros, including project totals, monthly charts and average denominators.
+- Omit missing groups, contacts and categories only from calculations requiring those fields; explain report populations and exclusions.
+- Align JSON, CSV, HTML and PDF exports, with separate scope and excluded-project tables.
+- Protect project views from late responses during navigation and retain existing help, drafts and responsive layouts.
+
 ## 3.0.0-alpha.12 — 2026-11-03
 
 - Restore a more vivid Pandora palette with a blue-violet background, cyan lighting and stronger surface contrast.

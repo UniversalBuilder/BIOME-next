@@ -23,7 +23,7 @@ class ReportCoverageTests(unittest.TestCase):
         result = summarize([{'group': ' ', 'minutes': None}], 'group')
         self.assertEqual(result['items'], [])
         self.assertEqual(result['excluded'], 1)
-        for value in [None, '', ' [Non Renseigné] ', 'Unknown', 'Not specified']:
+        for value in [None, '', ' [Non Renseigné] ', 'Unknown', 'Not specified', '(Non renseigné)', 'Sans groupe', 'No group']:
             self.assertFalse(known_label(value))
         self.assertTrue(known_label('[Cellular Imaging Facility]'))
 

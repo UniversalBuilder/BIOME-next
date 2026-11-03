@@ -1,4 +1,5 @@
 """Read-only documentary checks; never recover files or probe external storage."""
+from project_accounting import valid_minutes
 import json
 import subprocess
 import sys
@@ -172,7 +173,7 @@ def diagnose_catalog(folder, check_locations=False, progress=None):
         entry_ids = {x['id'] for x in entries}
         timed = Counter()
         for log in logs:
-            if type(log.get('minutes')) is not int or not 0 <= log['minutes'] <= 1440:
+            if not valid_minutes(log):
                 issue('error', name, 'records/work-logs.json', 'Durée invalide : ' + log['id'])
             try:
                 datetime.strptime(log.get('date', ''), '%Y-%m-%d')

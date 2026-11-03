@@ -1,6 +1,6 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.12 · Windows · 3 novembre 2026
+Version 3.0.0-alpha.13 · Windows · 3 novembre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
@@ -25,6 +25,16 @@ Survolez une action, ou placez-y le focus au clavier, pour lire son infobulle. �
 Les captures des principaux espaces ont été actualisées pour alpha.12. Certaines vues détaillées de parcours conservent leur ancien habillage ; leurs commandes et les actions décrites restent applicables.
 
 
+## Temps autonome et périmètre des bilans
+
+Dans un projet, **Temps & bilan** permet d’exclure volontairement ce projet de tous les indicateurs, avec un motif facultatif, ou de saisir du temps daté sans note. Le temps autonome s’ajoute à celui du cahier. Une estimation historique est identifiée et rattachée au mois et à l’année de la date choisie.
+
+Les temps inconnus restent distincts des zéros explicitement enregistrés. Les groupes, contacts et catégories manquants sont écartés des seuls calculs qui nécessitent ces informations. Le bilan et ses exports indiquent les populations retenues et exclues. Voir les [règles détaillées du bilan et des durées](report-scope-and-time.fr.md).
+
+![Contrôles du temps autonome et de l’exclusion des bilans](images/30-project-time-scope.jpg)
+
+![Périmètre du bilan, durées inconnues et zéros saisis](images/31-report-population.jpg)
+
 ## Le parcours de travail
 
 **Demande → projet → originaux conservés → cadrage → essais et échanges → livraison → bilan.**
@@ -42,7 +52,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.12), téléchargez `BIOME-Windows-portable-3.0.0-alpha.12.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.13), téléchargez `BIOME-Windows-portable-3.0.0-alpha.13.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. Fermez la fenêtre dédiée pour quitter BIOME ; le bouton **Quitter BIOME** reste aussi disponible.
 

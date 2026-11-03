@@ -13,7 +13,9 @@ def create_pdf(report):
     styles=getSampleStyleSheet();styles['BodyText'].fontSize=10;styles['BodyText'].leading=14
     styles['Title'].textColor=colors.HexColor('#223d49')
     p=lambda text:Paragraph(html.escape(str(text)),styles['BodyText'])
-    story=[Paragraph('BIOME - Bilan d’activité',styles['Title']),p('Période : '+report['start']+' au '+report['end']+' (dates incluses)'),Spacer(1,16),p(f"{report['total_minutes']//60} h {report['total_minutes']%60:02d} min renseignées | {len(report['projects'])} projets | {report['group_count']} groupes | {report['contact_count']} contacts"),Spacer(1,18)]
+    total_label=(f"{report['total_minutes']//60} h {report['total_minutes']%60:02d} min renseignées" if any(row['minutes'] is not None for row in report['projects']) else 'Temps non renseigné')
+    story=[Paragraph('BIOME - Bilan d’activité',styles['Title']),p('Période : '+report['start']+' au '+report['end']+' (dates incluses)'),Spacer(1,16),p(f"{total_label} | {len(report['projects'])} projets | {report['group_count']} groupes | {report['contact_count']} contacts"),Spacer(1,18)]
+    story.extend([p(str(sum(row['minutes'] is not None for row in report['projects']))+' projets avec temps renseigné sur '+str(len(report['projects']))+' retenus. '+str(len(report.get('excluded_projects',[])))+' projets exclus volontairement de tous les indicateurs.'),p('Estimations historiques incluses : '+str(report.get('estimated_minutes',0))+' minutes, attribuées à leur date de rattachement.')])
     def chart(title,counts,unit):
         section_start=len(story)
         values=sorted(counts.items(),key=lambda x:(-x[1],x[0]))
@@ -40,10 +42,14 @@ def create_pdf(report):
     for row in report['projects']:
         story.append(Paragraph(html.escape(row['title']),styles['Heading2']))
         minutes=row['minutes'];duration='Non renseigné' if minutes is None else f'{minutes//60} h {minutes%60:02d} min'
-        rows=[['Groupe',row['group'] or 'Non renseigné'],['Contact',row['contact'] or 'Non renseigné'],['Statut actuel',statuses.get(row['status'],row['status'])],['Temps / séances',duration+' / '+str(row['session_count'])],['Logiciels',', '.join(row['software']) or 'Non renseigné'],['Modalités',', '.join(row['modalities']) or 'Non renseigné'],['Thématiques',', '.join(row['topics']) or 'Non renseigné']]
+        rows=[['Groupe',row['group'] or 'Non renseigné'],['Contact',row['contact'] or 'Non renseigné'],['Statut actuel',statuses.get(row['status'],row['status'])],['Temps / saisies',duration+' / '+str(row['session_count'])],['Logiciels',', '.join(row['software']) or 'Non renseigné'],['Modalités',', '.join(row['modalities']) or 'Non renseigné'],['Thématiques',', '.join(row['topics']) or 'Non renseigné']]
         table=Table([[p(a),p(b)] for a,b in rows],colWidths=[110,401],hAlign='LEFT')
         table.setStyle(TableStyle([('VALIGN',(0,0),(-1,-1),'TOP'),('LINEBELOW',(0,0),(-1,-1),.3,colors.HexColor('#dddddd')),('BOTTOMPADDING',(0,0),(-1,-1),7)]))
         story.extend([table,Spacer(1,16)])
+    if report.get('excluded_projects'):
+        story.append(Paragraph('Projets exclus volontairement',styles['Heading2']))
+        for row in report['excluded_projects']:
+            story.append(p(row['title']+' — '+(row['reason'] or 'Motif non renseigné')))
     story.extend([Paragraph('Lecture du bilan',styles['Heading2']),p('Temps humain saisi à la date des séances. Un temps absent ne signifie pas zéro travail. '+str(report['entries_without_time'])+' entrées ne sont reliées à aucune saisie de temps. Aucune répartition du temps entre logiciels n’est supposée.')])
     if report['warnings']: story.append(p('Dossiers non comptabilisés : '+'; '.join(report['warnings'])))
     def footer(canvas,document):

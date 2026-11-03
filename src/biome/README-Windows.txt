@@ -1,4 +1,4 @@
-BIOME 3.0.0-alpha.12 — Windows portable — préversion de validation
+BIOME 3.0.0-alpha.13 — Windows portable — préversion de validation
 
 Extraire tout le dossier BIOME, puis ouvrir BIOME.exe.
 Conserver le sous-dossier _internal à côté de BIOME.exe.
@@ -24,3 +24,5 @@ L’interface reste en français dans ce jalon. Le prochain jalon couvre l’ang
 Cette préversion n’est pas signée numériquement et doit encore être éprouvée sur un autre PC avant une diffusion publique.
 
 Aide : survoler une action ou lui donner le focus au clavier affiche son infobulle. Le bouton ? ouvre les repères de l’écran ou du formulaire en cours. Polices et aide sont incluses hors ligne.
+
+Temps & bilan : exclure un projet des bilans ou ajouter une durée datée sans note. Les estimations historiques restent identifiées. Les temps autonomes s’ajoutent aux séances du cahier. Utiliser alpha.13 ou ultérieure pour respecter les exclusions dans les bilans.

@@ -1,14 +1,14 @@
-# BIOME-next 3.0.0-alpha.12
+# BIOME-next 3.0.0-alpha.13
 
 BIOME-next is the actively developed successor to [legacy BIOME 2.x](https://github.com/UniversalBuilder/BIOME). It redesigns project management around readable documentary catalogues and separate original-image storage. The legacy repository preserves the old application and its history. This is a development preview, with a different data format; it is not an automatic upgrade or database migration.
 
 
 ## Download and documentation
 
-- [Windows portable release — 3.0.0-alpha.12](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.12)
+- [Windows portable release — 3.0.0-alpha.13](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.13)
 - [Illustrated user guide (English)](docs/user-guide.md)
 - [Guide illustré complet (français)](docs/guide-utilisateur.fr.md)
-- [Release notes and limitations](docs/release-notes-3.0.0-alpha.12.md)
+- [Release notes and limitations](docs/release-notes-3.0.0-alpha.13.md)
 - [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md)
 
 The Windows archive includes an offline HTML guide with screenshots. Extract
@@ -20,6 +20,9 @@ The application bundles its Roboto typeface for consistent offline rendering.
 Action tooltips work with mouse hover and keyboard focus. The discreet **?**
 opens a short help dialog for the current screen or editor; closing it preserves
 unsaved fields and returns focus to the help button.
+
+The project **Temps & bilan** panel supports reversible report exclusions and
+dated independent time records. [Report population and time rules (French)](docs/report-scope-and-time.fr.md) explain missing data, explicit zeros and historical estimates.
 
 ![BIOME-next fictional project catalogue](docs/images/03-projects.jpg)
 
@@ -76,7 +79,7 @@ developer credentials or a personal home directory.
 
 ## Version and data formats
 
-Application version: 3.0.0-alpha.12. Project format: 1.1 (reads 1.0 and 0.1-draft).
+Application version: 3.0.0-alpha.13. Project format: 1.1 (reads 1.0 and 0.1-draft).
 Catalogue identity format: 1. Application release versions are independent of
 project format versions. No implicit rewrite of existing project data is needed
 to read an older supported format.

@@ -73,6 +73,7 @@ def render(source):
     document = f'<!doctype html><html lang="{language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{html.escape(title)}</title><style>{style}</style></head><body><header><strong>BIOME-next · {VERSION}</strong><p class="note">{note}</p><nav aria-label="Contents">{toc}</nav></header><main>' + '\n'.join(output) + '</main></body></html>'
     # Keep offline links within the rendered guides in HTML form.
     document = document.replace('href="guide-utilisateur.fr.md"', 'href="guide-utilisateur.fr.html"')
+    document = document.replace('href="report-scope-and-time.fr.md"', 'href="report-scope-and-time.fr.html"')
     target = source.with_suffix('.html')
     target.write_bytes(document.encode('utf-8'))
     for path in re.findall(r'<img[^>]+src="([^"]+)"', document):
@@ -82,5 +83,5 @@ def render(source):
 
 if __name__ == '__main__':
     root = Path(__file__).resolve().parents[1]
-    for name in ['user-guide.md', 'guide-utilisateur.fr.md']:
+    for name in ['user-guide.md', 'guide-utilisateur.fr.md', 'report-scope-and-time.fr.md']:
         print(render(root / 'docs' / name))

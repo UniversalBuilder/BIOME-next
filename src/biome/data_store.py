@@ -1,5 +1,6 @@
 """Project workflows independent of HTTP and the user interface."""
 from report_summary import summarize, known_label
+from project_accounting import AccountingConflict, accounting_state, recover_accounting, save_accounting, scope, valid_minutes, write_csv
 from mail_messages import MAX_MESSAGE_BYTES, MAX_IMAGE_BYTES, MAX_ENTRY_FILES, MAX_ENTRY_BYTES
 from pathlib import Path
 import csv, io, json, os, uuid, base64, hashlib, zipfile, html, re, unicodedata
@@ -44,6 +45,7 @@ def preserve_entry_conflict(root, entry, draft):
             'missing':raw is None}
 
 def read_project(root):
+    recover_accounting(root)
     from project_dates import date_metadata
     from data_folders import folder_info
     entries = load(root/'records/entries.json')
@@ -60,7 +62,7 @@ def read_project(root):
             'unlinked_files':[file for file in load(root/'records/versions.json') if file['id'] not in linked],
             'datasets':[dict(item,resolved_location=str(dataset_path(root,item)) if item.get('storage')=='project' else item['location']) for item in load(root/'records/datasets.json')],
             'dates':date_metadata(root,load(root/'biome.json')),'data_folder':folder_info(root),'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
-            'total_minutes': sum(x['minutes'] for x in logs), 'historical_time_unknown': True}
+            **accounting_state(work), 'historical_time_unknown': True}
 
 def delivery_files(root):
     from delivery_catalog import inventory
@@ -356,6 +358,7 @@ def add_entry(root, data):
 
 def recover(root):
     if (root/'biome.json').exists() or (root/'records').is_dir(): load(root/'biome.json')
+    recover_accounting(root)
     recover_receipt(root)
     recover_project_info(root)
     recover_framing(root)
@@ -397,12 +400,7 @@ def recover(root):
     if t.get('edit'): work['logs']=[l for l in work['logs'] if t['entry']['id'] not in l['entry_ids']]
     if log and not any(e['id']==log['id'] for e in work['logs']): work['logs'].append(log)
     write_json(root/'records/work-logs.json',work)
-    stream=io.StringIO(newline='')
-    writer=csv.writer(stream)
-    writer.writerow(['id','date','minutes','activity_type','entry_ids','description'])
-    for x in work['logs']:
-        writer.writerow([x['id'],x['date'],x['minutes'],x['activity_type'],';'.join(x['entry_ids']),x['description']])
-    atomic(root/'records/activity.csv','\ufeff'+stream.getvalue())
+    write_csv(root,work)
     pending.unlink()
 
 def update_project_info(root,data):
@@ -691,8 +689,10 @@ def project_catalog(initial):
     return result
 
 def project_overview(path,key):
-    project=load(path/'biome.json');entries=load(path/'records/entries.json')
+    recover_accounting(path)
+    project=load(path/'biome.json');entries=load(path/'records/entries.json');work=load(path/'records/work-logs.json')
     dates=[datetime.strptime(e['date_source'],'%d/%m/%Y %H:%M:%S') for e in entries]
+    dates.extend(datetime.strptime(log['date'],'%Y-%m-%d') for log in work['logs'] if not log.get('entry_ids') and not log.get('estimate'))
     legacy=project.get('legacy_import')
     from project_dates import project_date_value,activity_date_value
     created=project_date_value(project)
@@ -707,54 +707,82 @@ def project_overview(path,key):
         if item.get('receipt') and item.get('created_at'):
             dates.append(datetime.fromisoformat(item['created_at']).astimezone().replace(tzinfo=None))
     last=max(dates).isoformat() if dates else None
-    return {'key':key,'title':project['title'],'contact':project.get('contact',''),'group':project.get('group',''),'status':project.get('status',{}).get('value',''),'last_activity':last,'created_at':created,'historical':bool(legacy),'entry_count':len(entries)}
+    return {'key':key,'title':project['title'],'contact':project.get('contact',''),'group':project.get('group',''),'status':project.get('status',{}).get('value',''),'last_activity':last,'created_at':created,'historical':bool(legacy),'entry_count':len(entries),'report_excluded':scope(work)['excluded']}
 
 def activity_report(initial,year=None,start=None,end=None):
     collected=[];years=set();warnings=[]
-    for key,path in project_catalog(initial).items():
+    catalogue=project_catalog(initial)
+    for key,path in catalogue.items():
         try:
-            project=load(path/'biome.json');entries=load(path/'records/entries.json');logs=load(path/'records/work-logs.json')['logs']
+            recover_accounting(path)
+            project=load(path/'biome.json');entries=load(path/'records/entries.json');work=load(path/'records/work-logs.json');logs=work['logs']
+            policy=scope(work)
             if len({log['id'] for log in logs})!=len(logs): raise ValueError('Temps dupliqués')
             dated=[(entry,datetime.strptime(entry['date_source'],'%d/%m/%Y %H:%M:%S').date()) for entry in entries]
             timed=[]
             for log in logs:
-                if type(log['minutes']) is not int or log['minutes']<0: raise ValueError('Durée invalide')
+                if not valid_minutes(log): raise ValueError('Durée invalide')
                 timed.append((log,datetime.strptime(log['date'],'%Y-%m-%d').date()))
             years.update(d.year for _,d in dated);years.update(d.year for _,d in timed)
-            collected.append((key,project,dated,timed))
+            collected.append((key,project,dated,timed,policy))
         except (OSError,ValueError,KeyError,TypeError) as error: warnings.append(path.name+' : '+str(error))
     chosen=int(year) if year else max(years or {datetime.now().year})
     if bool(start)!=bool(end): raise ValueError('Date de début et de fin requises')
     first=datetime.strptime(start,'%Y-%m-%d').date() if start else datetime(chosen,1,1).date()
     last=datetime.strptime(end,'%Y-%m-%d').date() if end else datetime(chosen,12,31).date()
     if first>last: raise ValueError('La date de début doit précéder la date de fin')
-    rows=[];monthly={}
-    for key,project,dated,timed in collected:
-        notes=[entry for entry,y in dated if first<=y<=last];work=[log for log,y in timed if first<=y<=last]
+    rows=[];monthly={};excluded=[];period_count=0
+    for key,project,dated,timed,policy in collected:
+        notes=[entry for entry,day in dated if first<=day<=last];work=[log for log,day in timed if first<=day<=last]
         if not notes and not work: continue
-        for log in work:
-            month=log['date'][:7];monthly[month]=monthly.get(month,0)+log['minutes']
+        period_count+=1
         accounted={eid for log,_ in timed for eid in log.get('entry_ids',[])}
-        rows.append({'key':key,'title':project['title'],'group':project.get('group',''),'contact':project.get('contact',''),'activity_type':project.get('framing',{}).get('activity_type',''),'status':project['status']['value'],'minutes':sum(log['minutes'] for log in work) if work else None,'session_count':len(work),'entry_count':len(notes),'entries_without_time':sum(entry['id'] not in accounted for entry in notes)})
-    for row in rows:
-        project=next(project for key,project,_,_ in collected if key==row['key'])
+        row={'key':key,'title':project['title'],'group':project.get('group',''),'contact':project.get('contact',''),
+             'activity_type':project.get('framing',{}).get('activity_type',''),'status':project['status']['value'],
+             'minutes':sum(log['minutes'] for log in work) if work else None,'session_count':len(work),'entry_count':len(notes),
+             'entries_without_time':sum(entry['id'] not in accounted for entry in notes),
+             'manual_minutes':sum(log['minutes'] for log in work if not log.get('entry_ids')),
+             'estimated_minutes':sum(log['minutes'] for log in work if log.get('estimate') is True)}
         row.update({key:project.get('framing',{}).get(key,[]) for key in ['software','modalities','topics']})
         row.update(group_id=project.get('group_id'),contact_id=project.get('contact_id'))
-    return {'breakdowns':{key:summarize(rows,key) for key in ['group','activity_type','software','modalities','topics']},'monthly_minutes':[{'month':month,'minutes':minutes} for month,minutes in sorted(monthly.items())],'start':first.isoformat(),'end':last.isoformat(),'group_count':len({row.get('group_id') or row['group'] for row in rows if known_label(row['group'])}),'contact_count':len({row.get('contact_id') or row['contact'] for row in rows if row['contact']}),'year':chosen,'years':sorted(years|{chosen},reverse=True),'projects':rows,'total_minutes':sum(row['minutes'] or 0 for row in rows),'projects_with_time':sum(row['minutes'] is not None for row in rows),'entries_without_time':sum(row['entries_without_time'] for row in rows),'warnings':warnings}
+        if policy['excluded']:
+            excluded.append({**row,'reason':policy['reason']})
+            continue
+        for log in work:
+            month=log['date'][:7];monthly[month]=monthly.get(month,0)+log['minutes']
+        rows.append(row)
+    timed_rows=[row for row in rows if row['minutes'] is not None]
+    return {'breakdowns':{key:summarize(rows,key) for key in ['group','activity_type','software','modalities','topics']},
+            'monthly_minutes':[{'month':month,'minutes':minutes} for month,minutes in sorted(monthly.items())],
+            'start':first.isoformat(),'end':last.isoformat(),
+            'group_count':len({row.get('group_id') or row['group'] for row in rows if known_label(row['group'])}),
+            'contact_count':len({row.get('contact_id') or row['contact'] for row in rows if known_label(row['contact'])}),
+            'year':chosen,'years':sorted(years|{chosen},reverse=True),'projects':rows,'excluded_projects':excluded,
+            'scope':{'catalogue_projects':len(catalogue),'period_projects':period_count,'included_projects':len(rows),'excluded_projects':len(excluded)},
+            'total_minutes':sum(row['minutes'] for row in timed_rows),'projects_with_time':len(timed_rows),
+            'projects_without_time':len(rows)-len(timed_rows),'explicit_zero_projects':sum(row['minutes']==0 for row in timed_rows),
+            'average_minutes':sum(row['minutes'] for row in timed_rows)/len(timed_rows) if timed_rows else None,
+            'manual_minutes':sum(row['manual_minutes'] for row in rows),'estimated_minutes':sum(row['estimated_minutes'] for row in rows),
+            'entries_without_time':sum(row['entries_without_time'] for row in rows),'warnings':warnings}
 
 def export_activity(report):
     tables={}
-    tables['projects.csv']=[['Project','Group','Contact','Current status','Recorded minutes','Sessions','Activity type','Software','Imaging modalities','Analysis topics']]
+    tables['projects.csv']=[['Project','Group','Contact','Current status','Recorded minutes','Sessions','Activity type','Software','Imaging modalities','Analysis topics','Independent minutes','Estimated minutes']]
     for row in report['projects']:
-        tables['projects.csv'].append([row['title'],row['group'],row['contact'],row['status'],row['minutes'] if row['minutes'] is not None else '',row['session_count'],row['activity_type'],'; '.join(row['software']),'; '.join(row['modalities']),'; '.join(row['topics'])])
+        tables['projects.csv'].append([row['title'],row['group'],row['contact'],row['status'],row['minutes'] if row['minutes'] is not None else '',row['session_count'],row['activity_type'],'; '.join(row['software']),'; '.join(row['modalities']),'; '.join(row['topics']),row.get('manual_minutes',0),row.get('estimated_minutes',0)])
     for key in ['group','activity_type','software','modalities','topics']:
         summary=summarize(report['projects'],key)
         timed=key in ['group','activity_type']
         tables[key+'.csv']=[['Category','Projects']+(['Recorded minutes'] if timed else [])]+[[item['label'],item['count']]+([item['value']] if timed else []) for item in summary['items']]
     tables['coverage.csv']=[['Breakdown','Included projects','Excluded projects','Reason']]+[[key,summary['included'],summary['excluded'],summary['reason']] for key in ['group','activity_type','software','modalities','topics'] for summary in [summarize(report['projects'],key)]]
+    tables['excluded-projects.csv']=[['Project','Group','Contact','Reason','Recorded minutes in period']]+[[row['title'],row['group'],row['contact'],row['reason'],row['minutes'] if row['minutes'] is not None else ''] for row in report.get('excluded_projects',[])]
+    tables['scope.csv']=[['Population','Projects','Rule'],['Included projects',len(report['projects']),'Documented activity in period, not manually excluded'],['Explicitly excluded',len(report.get('excluded_projects',[])),'Removed from all totals and charts'],['Duration recorded',report.get('projects_with_time',sum(row['minutes'] is not None for row in report['projects'])),'Includes explicitly recorded zero'],['Duration unknown',sum(row['minutes'] is None for row in report['projects']),'Excluded from duration statistics']]
     esc=lambda value:html.escape(str(value))
     page=['<!doctype html><html lang="fr"><meta charset="utf-8"><title>BIOME — Bilan d’activité</title><style>body{font:15px system-ui;max-width:1100px;margin:40px auto;padding:20px;color:#20242a}table{border-collapse:collapse;width:100%;margin:20px 0}th,td{text-align:left;border-bottom:1px solid #ccc;padding:9px;overflow-wrap:anywhere}th{background:#eee}h2{margin-top:35px}@media print{button{display:none}thead{display:table-header-group}tr{break-inside:avoid}body{margin:0;font-size:10pt}}</style><button onclick="window.print()">Imprimer / enregistrer en PDF</button><h1>Bilan d’activité BIOME</h1>', '<p>Période : '+esc(report['start'])+' au '+esc(report['end'])+' (dates incluses).</p>', '<p>'+esc(report['total_minutes']//60)+' h '+esc(report['total_minutes']%60)+' min renseignées · '+esc(len(report['projects']))+' projets · '+esc(report['group_count'])+' groupes · '+esc(report['contact_count'])+' contacts.</p>', '<p>Temps humain saisi à la date des séances. Une valeur vide signifie un temps non renseigné, pas zéro travail. '+esc(report['entries_without_time'])+' entrées sans saisie de temps associée. Les catégories et statuts sont les valeurs actuelles des projets. Un projet peut compter dans plusieurs catégories scientifiques ; ne pas additionner ces nombres. Aucune répartition des heures par logiciel n’est supposée.</p>']
-    labels={'coverage':'Couverture des répartitions','projects':'Détail des projets','group':'Par groupe','activity_type':'Par intervention principale','software':'Logiciels','modalities':'Modalités d’imagerie','topics':'Thématiques d’analyse'}
+    if not any(row['minutes'] is not None for row in report['projects']):
+        page=[item.replace(esc(report['total_minutes']//60)+' h '+esc(report['total_minutes']%60)+' min renseignées', 'Temps non renseigné') for item in page]
+    page.append('<p>'+str(len(report.get('excluded_projects',[])))+' projet(s) exclus volontairement de tous les indicateurs. '+str(sum(row['minutes'] is not None for row in report['projects']))+' projet(s) avec temps renseigné sur '+str(len(report['projects']))+' retenus. Dont '+str(report.get('estimated_minutes',0))+' minutes d’estimations historiques, attribuées à leur date de rattachement.</p>')
+    labels={'coverage':'Couverture des répartitions','projects':'Détail des projets','excluded-projects':'Projets exclus volontairement','scope':'Périmètre et temps disponibles','group':'Par groupe','activity_type':'Par intervention principale','software':'Logiciels','modalities':'Modalités d’imagerie','topics':'Thématiques d’analyse'}
     for filename,rows in tables.items():
         page+=['<h2>'+labels[filename[:-4]]+'</h2><table><thead><tr>'+''.join('<th>'+esc(v)+'</th>' for v in rows[0])+'</tr></thead><tbody>']
         page.extend('<tr>'+''.join('<td>'+esc(v)+'</td>' for v in row)+'</tr>' for row in rows[1:])
