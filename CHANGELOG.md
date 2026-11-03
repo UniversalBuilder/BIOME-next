@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.0-alpha.12 — 2026-11-03
+
+- Restore a more vivid Pandora palette with a blue-violet background, cyan lighting and stronger surface contrast.
+- Distinguish primary actions, imports, exports and deliveries through blue, violet, green and pink accents.
+- Strengthen labelled project status colours and highlight catalogue/report metrics.
+- Use luminous chart gradients and stable label-based category colours without changing values or calculations.
+- Add colour markers for notebook entry types and retain keyboard help, unsaved drafts and responsive layouts.
+
 ## 3.0.0-alpha.11 — 2026-11-03
 
 - Add persistent workspace navigation, clearer project tabs and catalogue overview counts.

@@ -34,3 +34,14 @@ Les captures sont conservées dans `test-tmp/interface`. Ces vérifications ne c
 ## Références visuelles
 
 Les captures fournies par l’utilisateur et [ThreatLens de DIGIMARIX](https://dribbble.com/shots/27543906-ThreatLens-Enterprise-Cybersecurity-SaaS-Dashboard) servent de références pour la hiérarchie visuelle et la subtilité des surfaces. Les données affichées restent celles du catalogue BIOME.
+
+
+## Palette Pandora plus vive — proposition après alpha.11
+
+Le fond retrouve un dégradé bleu-violet avec une lumière cyan. Les actions principales utilisent un dégradé bleu-indigo, l’import un violet, l’export et les opérations de conservation un vert, les livraisons un rose-violet. Les actions de suppression conservent un traitement rouge distinct et secondaire.
+
+Les statuts utilisent des couleurs stables : bleu pour En cours, ambre pour En validation, vert pour Terminé, orange pour En pause et violet pour les projets à cadrer ou en préparation. Le libellé reste toujours affiché ; la couleur ne porte pas seule l’information.
+
+Le bilan utilise des valeurs et des barres plus lumineuses. Les catégories reçoivent une teinte déterminée par leur libellé, qui reste stable lorsque l’ordre des résultats change. Les données non renseignées restent grises. Les unités, les nombres et les calculs ne changent pas. Les entrées du cahier portent une marque colorée selon leur type.
+
+Cette proposition est vérifiée sur les écrans du catalogue, du bilan, des contacts, du cahier, des fichiers et des livraisons, ainsi qu’en petite largeur. Les contrôles navigateur existants pour les brouillons, les onglets, les infobulles et les modales passent. Les contrastes texte/fond aux extrémités des dégradés des principaux boutons atteignent au moins 4,5:1. Cela ne constitue pas un audit exhaustif de tous les contrastes de l’application.

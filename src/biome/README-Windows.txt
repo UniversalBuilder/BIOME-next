@@ -1,4 +1,4 @@
-BIOME 3.0.0-alpha.11 — Windows portable — préversion de validation
+BIOME 3.0.0-alpha.12 — Windows portable — préversion de validation
 
 Extraire tout le dossier BIOME, puis ouvrir BIOME.exe.
 Conserver le sous-dossier _internal à côté de BIOME.exe.
