@@ -16,6 +16,10 @@ def collect(destination):
                 source=Path(dist.locate_file(file))
                 if source.is_file():
                     output=target/name/Path(*file.parts);output.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,output)
+    fonts=Path(__file__).resolve().parent/'fonts'
+    if (fonts/'LICENSE.txt').exists():
+        shutil.copyfile(fonts/'LICENSE.txt',target/'Roboto-LICENSE.txt')
+        lines.append('Roboto — Google / Christian Robertson — SIL Open Font License 1.1; see Roboto-LICENSE.txt')
     # Python's redistribution license ships with the build interpreter.
     for source in [Path(sys.base_prefix)/'LICENSE.txt',Path(sys.base_prefix)/'LICENSE']:
         if source.exists():shutil.copyfile(source,target/'Python-LICENSE.txt');break

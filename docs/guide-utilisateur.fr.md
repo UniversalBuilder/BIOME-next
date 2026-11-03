@@ -1,12 +1,27 @@
 # BIOME-next — guide illustré
 
-Version 3.0.0-alpha.10 · Windows · 2 novembre 2026
+Version 3.0.0-alpha.11 · Windows · 3 novembre 2026
 
 BIOME-next poursuit le développement de [BIOME 2.x](https://github.com/UniversalBuilder/BIOME), avec une architecture documentaire remaniée. L’ancien dépôt conserve l’historique ; le développement actif se poursuit ici. Cette préversion fonctionne en français. L’anglais par défaut et les fichiers de traduction restent à venir.
 
 Depuis alpha.3, les messages acceptent 50 Mo et les illustrations 10 Mo ; certaines captures alpha.2 montrent encore les anciennes limites. Le total par entrée est de 100 Mo et l’extraction des illustrations est plafonnée à 50 Mo.
 
 Toutes les captures ci-dessous proviennent de l’application réelle et utilisent exclusivement des identités, images et temps fictifs. Les dates et valeurs illustrent les fonctions, pas des résultats scientifiques.
+
+## Interface et aide contextuelle
+
+La navigation conserve les espaces Projets, Contacts, Bilan et Catalogue au même endroit. Elle devient compacte dans les petites fenêtres. Les indicateurs du catalogue comptent tous les projets, indépendamment du filtre de recherche.
+
+Survolez une action, ou placez-y le focus au clavier, pour lire son infobulle. Échap ferme l’infobulle. Le discret **?** du bandeau supérieur ouvre une aide pour l’écran ou le formulaire en cours. Fermez-la avec la croix ou Échap pour retrouver le même projet, son onglet et les champs saisis. Les polices et l’aide fonctionnent hors ligne.
+
+![Navigation et typographie affinées du catalogue](images/03-projects.jpg)
+
+![Aide courte adaptée à l’écran ouvert](images/28-contextual-help.jpg)
+
+![Infobulle précisant l’effet d’une action](images/29-action-tooltip.jpg)
+
+Les captures des principaux espaces ont été actualisées pour alpha.11. Certaines vues détaillées de parcours conservent leur ancien habillage ; leurs commandes et les actions décrites restent applicables.
+
 
 ## Le parcours de travail
 
@@ -25,7 +40,7 @@ Sauvegardez séparément le catalogue et les originaux. Déplacer le catalogue n
 
 ## 1. Installer et démarrer
 
-Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.10), téléchargez `BIOME-Windows-portable-3.0.0-alpha.10.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
+Depuis la [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.11), téléchargez `BIOME-Windows-portable-3.0.0-alpha.11.zip`. Extrayez tout le ZIP dans un dossier où vous pouvez écrire, puis ouvrez `BIOME/BIOME.exe`. Gardez le dossier `_internal` avec l’exécutable. Aucun Python ni serveur à installer. Chrome ou Edge fournit la fenêtre dédiée, sans les onglets du navigateur habituel.
 
 Au premier démarrage, BIOME propose trois choix : créer un catalogue vide, ouvrir un catalogue existant, ou installer la démo. Les démarrages suivants rouvrent le dernier catalogue accessible. Fermez la fenêtre dédiée pour quitter BIOME ; le bouton **Quitter BIOME** reste aussi disponible.
 

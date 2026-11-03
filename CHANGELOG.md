@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.0.0-alpha.11 — 2026-11-03
+
+- Add persistent workspace navigation, clearer project tabs and catalogue overview counts.
+- Refine typography with bundled Roboto fonts, consistent weights, quieter borders, subtle gradients and shadows.
+- Fit catalogue columns at intermediate widths while retaining horizontal scrolling on small screens.
+- Explain actions through mouse and keyboard tooltips, including dynamically created controls.
+- Replace the separate help workspace with a discreet question-mark button and contextual modal guidance for screens and editors.
+- Preserve unsaved fields and the selected project tab when opening and closing help; return keyboard focus to its trigger.
+- Bundle interface assets and font licensing in the Windows portable application; keep the project format unchanged.
+
 ## 3.0.0-alpha.10 — 2026-11-02
 
 - Edit the project date and optional known activity date for historical and current projects.

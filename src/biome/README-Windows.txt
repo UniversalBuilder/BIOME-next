@@ -1,4 +1,4 @@
-BIOME 3.0.0-alpha.1 — Windows portable — préversion de validation
+BIOME 3.0.0-alpha.11 — Windows portable — préversion de validation
 
 Extraire tout le dossier BIOME, puis ouvrir BIOME.exe.
 Conserver le sous-dossier _internal à côté de BIOME.exe.
@@ -15,11 +15,12 @@ La sauvegarde du catalogue ne remplace pas celle des données externes.
 
 Les réglages et le journal technique sont dans %LOCALAPPDATA%\BIOME, hors du programme.
 Pour arrêter : fermez la dernière fenêtre BIOME avec sa croix, ou utilisez Quitter BIOME.
-Fermer seulement la fenêtre laisse BIOME disponible en arrière-plan.
 Un deuxième lancement ouvre l’instance existante.
 
-Mise à jour : arrêter BIOME, remplacer le dossier du programme entier, puis relancer.
+Mise à jour : arrêter BIOME, extraire cette version dans un nouveau dossier de programme, puis rouvrir votre catalogue existant.
 Ne pas placer vos projets dans _internal. Les réglages sont indépendants du programme.
 
 L’interface reste en français dans ce jalon. Le prochain jalon couvre l’anglais par défaut et les fichiers de traduction, y compris erreurs et exports.
 Cette préversion n’est pas signée numériquement et doit encore être éprouvée sur un autre PC avant une diffusion publique.
+
+Aide : survoler une action ou lui donner le focus au clavier affiche son infobulle. Le bouton ? ouvre les repères de l’écran ou du formulaire en cours. Polices et aide sont incluses hors ligne.

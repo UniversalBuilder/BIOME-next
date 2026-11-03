@@ -36,7 +36,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                     page=(HERE/'index.html').read_text(encoding='utf-8').replace('__TOKEN__',token).replace('__APP_VERSION__',VERSION)
                     if startup_warning:
                         import html
-                        page=page.replace('<main>','<main><p role="status" style="padding:16px;border:1px solid #f4cf91;border-radius:8px">'+html.escape(startup_warning)+'</p>',1)
+                        page=page.replace('<main id="main-content">','<main id="main-content"><p role="status" style="padding:16px;border:1px solid #f4cf91;border-radius:8px">'+html.escape(startup_warning)+'</p>',1)
                     if desktop:
                         page=page.replace('BIOME · Prototype local','BIOME').replace('Prototype local','Application locale')
                         page=page.replace('</nav>', '<button type="button" id="stop-biome">Quitter BIOME</button></nav>',1)
@@ -45,6 +45,12 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                 elif route=='/favicon.ico':
                     raw=(HERE/'favicon.ico').read_bytes()
                     self.send_response(200);self.send_header('Content-Type','image/x-icon');self.send_header('Content-Length',str(len(raw)));self.send_header('Cache-Control','no-cache');self.end_headers();self.wfile.write(raw)
+                elif route in ['/interface.css','/interface.js']:
+                    filename=route[1:]
+                    self.send(200,(HERE/filename).read_text(encoding='utf-8'),'text/css; charset=utf-8' if filename.endswith('.css') else 'application/javascript; charset=utf-8')
+                elif route in {f'/fonts/roboto-latin-{weight}-normal.woff2' for weight in [400,500,600,700]}:
+                    raw=(HERE/'fonts'/route.rsplit('/',1)[1]).read_bytes()
+                    self.send_response(200);self.send_header('Content-Type','font/woff2');self.send_header('Content-Length',str(len(raw)));self.send_header('Cache-Control','public, max-age=86400');self.send_header('X-Content-Type-Options','nosniff');self.end_headers();self.wfile.write(raw)
                 elif route=='/project-sort.js': self.send(200,(HERE/'project_sort.js').read_text(encoding='utf-8'),'application/javascript; charset=utf-8')
                 elif route in ['/delivery-selector.js','/delivery-selector.css']:
                     filename='delivery_selector.js' if route.endswith('.js') else 'delivery_selector.css'

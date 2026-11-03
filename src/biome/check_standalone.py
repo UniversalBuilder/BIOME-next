@@ -34,6 +34,13 @@ def run(executable,msg=None):
             assert get('api/about')['version']==VERSION
             with urllib.request.urlopen(url+'favicon.ico',timeout=10) as response:
                 assert response.headers['Content-Type']=='image/x-icon' and response.read()[:4]==b'\x00\x00\x01\x00'
+            # Check packaged UI/font assets as well as backend functionality.
+            source=Path(__file__).resolve().parent
+            for asset,mime in [('interface.css','text/css'),('interface.js','application/javascript')]+[(f'fonts/roboto-latin-{weight}-normal.woff2','font/woff2') for weight in [400,500,600,700]]:
+                with urllib.request.urlopen(url+asset,timeout=10) as response:
+                    assert response.headers['Content-Type'].startswith(mime)
+                    assert hashlib.sha256(response.read()).digest()==hashlib.sha256((source/asset).read_bytes()).digest(),asset
+            assert 'page-help-dialog' in page and 'Comprendre cet écran' not in page
             assert get('api/workspace')['needs_selection'] is True
             post('api/catalogue-create',{'destination':str(base),'name':catalog.name})
             assert get('api/projects')==[]

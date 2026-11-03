@@ -1,12 +1,27 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.10 · Windows x64 · November 2, 2026
+3.0.0-alpha.11 · Windows x64 · November 3, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
 Since alpha.3, message imports accept 50 MB and individual illustrations 10 MB; some alpha.2 screenshots still show older limits. Each entry accepts 100 MB total and image extraction is capped at 50 MB.
 
 All screenshots show the real application with fictional identities, generated images and example time records. They contain no research or personal project data.
+
+## Interface and contextual help
+
+The sidebar keeps Projects, Contacts, Activity report and Catalogue in a consistent place. On small windows it becomes compact navigation. The catalogue cards count all projects, regardless of the current search filter.
+
+Hover over an action, or focus it with the keyboard, to read its tooltip. Press Escape to dismiss the tooltip. The discreet **?** in the top bar opens guidance for the current screen or editor. Close it with the cross or Escape to continue with the same project, tab and unsaved fields. Fonts and help work offline.
+
+![Refined catalogue navigation and typography](images/03-projects.jpg)
+
+![Short help dialog for the active screen](images/28-contextual-help.jpg)
+
+![Action tooltip explaining what the button does](images/29-action-tooltip.jpg)
+
+The principal workspace screenshots were refreshed for alpha.11. Some detailed workflow captures retain earlier styling; their control names and documented actions remain applicable.
+
 
 ## Workflow and storage
 
@@ -25,7 +40,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.10.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.10), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.11.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.11), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Close the dedicated window to quit BIOME; **Quitter BIOME** is also available.
 
