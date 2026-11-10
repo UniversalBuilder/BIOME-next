@@ -1,5 +1,12 @@
 # Changelog
 
+## 3.0.0-alpha.14 — 2026-11-10
+
+- Edit notebook notes directly with a single formatting toolbar, including bold, italic, inline code, lists, undo and redo.
+- Show coloured, clickable notebook tags and add a dedicated tag filter.
+- Enter session durations in hours and minutes while keeping unknown durations distinct from explicit zeros.
+- Show the current project status, next step and editable pinned notes alongside the notebook. The next step is shared with project framing.
+
 ## 3.0.0-alpha.13 — 2026-11-03
 
 - Add a reversible, project-level exclusion from all activity report indicators, with an optional reason.

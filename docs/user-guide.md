@@ -1,6 +1,6 @@
 # BIOME-next — illustrated user guide
 
-3.0.0-alpha.13 · Windows x64 · November 3, 2026
+3.0.0-alpha.14 · Windows x64 · November 10, 2026
 
 BIOME-next continues [BIOME 2.x](https://github.com/UniversalBuilder/BIOME) with a redesigned, folder-based architecture. Development continues in this repository. This alpha currently has a French interface; English by default and optional translation packs are planned. The French control names below match the application. A [detailed French guide](guide-utilisateur.fr.md) is also available.
 
@@ -50,7 +50,7 @@ Back up original data separately from the catalogue. Referencing a folder does n
 
 ## 1. Install and start
 
-Download `BIOME-Windows-portable-3.0.0-alpha.13.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.13), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
+Download `BIOME-Windows-portable-3.0.0-alpha.14.zip` from the [release](https://github.com/UniversalBuilder/BIOME-next/releases/tag/v3.0.0-alpha.14), extract the entire archive and launch `BIOME/BIOME.exe`. Keep `_internal` beside the executable. No separate Python installation is needed. Chrome or Edge provides the dedicated application window. This preview is unsigned.
 
 On first launch, create a catalogue, open an existing one or install the demo. Subsequent launches remember the selected catalogue. Close the dedicated window to quit BIOME; **Quitter BIOME** is also available.
 
@@ -92,11 +92,13 @@ In **Catalogue**, **Créer un catalogue…** asks for a name and parent folder a
 
 ## 6. Notebook, time and imported exchanges
 
-**Cahier** has dated work notes, experiments, meetings, exchanges and decisions. Search includes text, tags, filenames and captions. **Modifier** edits an entry; **Actualiser** rereads project files.
+**Cahier** has dated work notes, experiments, meetings, exchanges and decisions. Search includes text, tags, filenames and captions. Click a tag chip to filter the notebook. **Modifier** edits an entry; **Actualiser** rereads project files.
 
 ![Notebook and attachments](images/06-notebook.jpg)
 
-**Ajouter une entrée** records type, activity date and time, text, optional estimated human minutes, tags and small attachments. Enter time once per session even if several notes describe it. Leave it empty when unknown or already counted; missing time does not mean no work. Attachments are limited to 100 files, 10 MB each (50 MB for a message or text file) and 100 MB total; use **Fichiers** for large data.
+The notebook shows **Prochaine étape** (the next step from project framing) and **Notes épinglées** (project reminders).
+
+**Ajouter une entrée** records the type, activity date and time, note, optional estimated work duration in hours and minutes, tags and small attachments. The toolbar applies bold, italic, inline code and lists directly as you edit, and provides undo and redo. Enter time once per session even if several notes describe it. Leave it empty when unknown or already counted; missing time does not mean no work. Attachments are limited to 100 files, 10 MB each (50 MB for a message or text file) and 100 MB total; use **Fichiers** for large data.
 
 ![Entry and human time](images/08-entry-and-time.jpg)
 

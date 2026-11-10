@@ -49,7 +49,14 @@ def run(executable,msg=None):
             assert again.returncode==0 and (state/'instance.json').read_bytes()==instance and process.poll() is None
             item=post('api/projects',{'title':'Standalone synthetic','contact':'Example person','request':'Synthetic request'})
             key=item['key'];query='?project='+key
-            post('api/entries'+query,{'type':'note','text':'Local session','date':'2026-10-15','time':'10:00','minutes':15})
+            text='<p><strong>Local session</strong></p><ul><li>Review images</li></ul>'
+            note=post('api/entries'+query,{'type':'note','text':text,'body_format':'rich','tags':'review','date':'2026-10-15','time':'10:00','minutes':15})
+            post('api/next-step'+query,{'base_next_step':'','next_step':'Review images'})
+            pins=post('api/pinned-note'+query,{'id':'917be5f9-09ba-45f9-bab4-68838e877b54','text':'Use the reference image'})
+            project=get('api/project'+query)
+            saved=next(entry for entry in project['entries'] if entry['id']==note['id'])
+            assert saved['text']==text and saved['body_format']=='rich' and saved['tags']==['review']
+            assert project['project']['framing']['next_step']=='Review images' and project['pinned_notes']==pins
             for asset in ['delivery-selector.js','delivery-selector.css']:
                 assert urllib.request.urlopen(url+asset,timeout=10).status==200
             directory=get('api/directory');old=next(x for x in directory['contacts'] if x['name']=='Example person')

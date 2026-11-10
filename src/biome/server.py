@@ -127,7 +127,7 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
             if route=='/api/shutdown' and desktop:
                 if self.headers.get('X-Biome-Token')!=token: return self.send(403,'{}')
                 self.send(200,'{}');threading.Thread(target=httpd.shutdown,daemon=True).start();return
-            if route not in ['/api/accounting','/api/open-window','/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
+            if route not in ['/api/accounting','/api/next-step','/api/pinned-note','/api/open-window','/api/create-data-folder','/api/open-project-data-folder','/api/directory-removal-preview','/api/directory-remove','/api/catalogue-create','/api/catalogue-open','/api/demo-install','/api/project-trash','/api/project-restore','/api/relocate-catalogue','/api/diagnostics-start','/api/entries','/api/datasets','/api/select-data','/api/deliveries','/api/import-preview','/api/projects','/api/framing','/api/project-info','/api/directory','/api/vocabularies','/api/request-preview','/api/workspace','/api/backup','/api/restore','/api/receive-preview','/api/receive-data','/api/open-dataset']: return self.send(404,'{}')
             if self.headers.get('X-Biome-Token')!=token:
                 return self.send(403,json.dumps({'error':'Cette page utilise une ancienne session. Copiez votre note, puis rechargez la page.'}))
             try:
@@ -219,6 +219,8 @@ def serve(root,port,settings=None,*,state_dir=None,on_ready=None,desktop=False,s
                     checked_date_fields(data)
                     allow_unknown=store.load(root/'biome.json')['format_version']=='1.1'
                     return self.send(200,json.dumps(store.update_project_info(root,store.bind_directory(initial,data,allow_unknown_contact=allow_unknown)),ensure_ascii=False))
+                if route=='/api/next-step': return self.send(200,json.dumps(store.update_next_step(root,data),ensure_ascii=False))
+                if route=='/api/pinned-note': return self.send(200,json.dumps(store.save_pinned_note(root,data),ensure_ascii=False))
                 if route=='/api/framing': return self.send(200,json.dumps(store.update_framing(root,data),ensure_ascii=False))
                 if route=='/api/projects': return self.send(201,json.dumps(store.create_project(initial,data),ensure_ascii=False))
                 if route=='/api/request-preview': return self.send(200,json.dumps(store.preview_request(data),ensure_ascii=False))

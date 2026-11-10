@@ -1,3 +1,446 @@
+function tagKey(label) {
+  return label.normalize('NFC').toLocaleLowerCase('fr');
+}
+
+function renderTagFilter() {
+  const filter = q('#notebook-tag');
+  const selected = filter.value;
+  const tags = new Map();
+  for (const entry of data.entries) {
+    for (const label of entry.tags || []) {
+      const key = tagKey(label);
+      if (!tags.has(key)) tags.set(key, label);
+    }
+  }
+  filter.replaceChildren(new Option('Tous les tags', ''));
+  for (const [key, label] of [...tags].sort((a, b) => a[1].localeCompare(b[1], 'fr'))) {
+    filter.add(new Option(label, key));
+  }
+  filter.value = tags.has(selected) ? selected : '';
+}
+
+function entryTags(tags) {
+  const list = document.createElement('div');
+  list.className = 'entry-tags';
+  const seen = new Set();
+  for (const label of tags) {
+    const key = tagKey(label);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    let hash = 0;
+    for (const character of key) hash = (Math.imul(hash, 31) + character.codePointAt(0)) >>> 0;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'entry-tag';
+    button.dataset.tone = ['cyan', 'blue', 'violet', 'green', 'amber', 'pink'][hash % 6];
+    button.dataset.tooltip = 'Filtrer le cahier sur ce tag';
+    button.textContent = label;
+    button.setAttribute('aria-pressed', String(q('#notebook-tag').value === key));
+    button.onclick = () => {
+      const filter = q('#notebook-tag');
+      filter.value = filter.value === key ? '' : key;
+      render(false);
+      filter.focus();
+    };
+    list.append(button);
+  }
+  return list;
+}
+
+function entryDuration() {
+  const hours = q('#entry-hours').value;
+  const minutes = q('#minutes').value;
+  return hours === '' && minutes === '' ? null : Number(hours) * 60 + Number(minutes);
+}
+
+function setEntryDuration(minutes) {
+  q('#entry-hours').value = minutes === null ? '' : Math.floor(minutes / 60);
+  q('#minutes').value = minutes === null ? '' : minutes % 60;
+  q('#minutes').setCustomValidity('');
+}
+
+for (const selector of ['#entry-hours', '#minutes']) {
+  q(selector).addEventListener('input', () => {
+    q('#minutes').setCustomValidity(entryDuration() > 1440 ? 'La durée maximale d’une entrée est de 24 heures.' : '');
+  });
+}
+
+function appendNoteInline(parent, text, nested = false) {
+  let offset = 0;
+  for (const match of text.matchAll(/\x60([^\x60]+)\x60|\*\*(.+?)\*\*|(?<![\p{L}\p{N}_])_([^_]+)_(?![\p{L}\p{N}_])/gu)) {
+    const [, code, bold, italic] = match;
+    parent.append(text.slice(offset, match.index));
+    const span = document.createElement(code ? 'code' : bold ? 'strong' : 'em');
+    const content = code ?? bold ?? italic;
+    if (code || nested) span.textContent = content;
+    else appendNoteInline(span, content, true);
+    parent.append(span);
+    offset = match.index + match[0].length;
+  }
+  parent.append(text.slice(offset));
+}
+
+function renderNoteBody(box, text, format, editing = false) {
+  box.classList.add('note-body');
+  box.replaceChildren();
+  if (format === 'rich') {
+    renderRichNote(box, text, editing);
+    return;
+  }
+  if (format !== 'markdown') {
+    if (editing && text.includes('\n')) {
+      for (const line of text.split('\n')) {
+        const paragraph = document.createElement('div');
+        paragraph.append(line || document.createElement('br'));
+        box.append(paragraph);
+      }
+    } else {
+      box.textContent = text;
+    }
+    return;
+  }
+  let block;
+  for (const line of text.split('\n')) {
+    if (!line.trim()) {
+      block = null;
+      continue;
+    }
+    const item = line.match(/^\s*(?:[-*+] |(\d{1,9})[.)] )(.*)$/);
+    const tag = item ? (item[1] ? 'OL' : 'UL') : 'P';
+    if (block?.tagName !== tag) {
+      block = document.createElement(tag);
+      if (tag === 'OL') block.start = Number(item[1]);
+      box.append(block);
+    }
+    if (item) {
+      const li = document.createElement('li');
+      appendNoteInline(li, item[2]);
+      block.append(li);
+    } else {
+      if (block.hasChildNodes()) block.append(document.createElement('br'));
+      appendNoteInline(block, line);
+    }
+  }
+}
+
+
+const noteTags = new Map([
+  ['B', 'strong'], ['STRONG', 'strong'], ['I', 'em'], ['EM', 'em'], ['CODE', 'code'],
+  ['DIV', 'div'], ['P', 'p'], ['BR', 'br'], ['UL', 'ul'], ['OL', 'ol'], ['LI', 'li'],
+]);
+
+function cleanNoteContent(source, target, editing = false) {
+  for (const node of source.childNodes) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      target.append(node.data);
+      continue;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE || node.namespaceURI !== 'http://www.w3.org/1999/xhtml') continue;
+    const monospace = node.tagName === 'FONT' && node.getAttribute('face') === 'monospace';
+    const tag = monospace ? 'code' : noteTags.get(node.tagName);
+    if (!tag) {
+      if (['SPAN', 'FONT'].includes(node.tagName)) cleanNoteContent(node, target, editing);
+      continue;
+    }
+    const element = document.createElement(editing && tag === 'code' ? 'font' : tag);
+    if (editing && tag === 'code') element.setAttribute('face', 'monospace');
+    if (tag === 'ol' && node.hasAttribute('start')) element.start = node.start;
+    if (tag === 'li' && node.hasAttribute('value')) element.value = node.value;
+    cleanNoteContent(node, element, editing);
+    target.append(element);
+  }
+}
+
+function renderRichNote(box, text, editing) {
+  const template = document.createElement('template');
+  template.innerHTML = text;
+  cleanNoteContent(template.content, box, editing);
+}
+
+function noteDisplayText(box) {
+  return Array.from(box.childNodes, node => {
+    if (node.nodeType === Node.TEXT_NODE) return node.data;
+    const text = noteDisplayText(node);
+    return /^(DIV|P|BR|UL|OL|LI)$/.test(node.tagName) ? text + '\n' : text;
+  }).join('');
+}
+
+let noteEditor = q('#text');
+let originalNote;
+let noteSelection;
+const noteTools = [...document.querySelectorAll('[data-note-command]')];
+
+function noteError(message) {
+  const error = q('#note-editor-error');
+  error.hidden = !message;
+  error.textContent = message;
+  noteEditor.setAttribute('aria-invalid', String(Boolean(message)));
+}
+
+function setNoteEditor(text, format = 'plain') {
+  // Use a fresh editing host so an undo from another note cannot restore its text here.
+  const editor = noteEditor.cloneNode(false);
+  noteEditor.replaceWith(editor);
+  noteEditor = editor;
+  renderNoteBody(editor, text, format, true);
+  originalNote = {text, body_format: format, html: editor.innerHTML};
+  noteSelection = null;
+  noteError('');
+  refreshNoteTools();
+}
+
+function readNoteEditor() {
+  const plain = noteEditor.innerText.trim();
+  const clean = document.createElement('div');
+  cleanNoteContent(noteEditor, clean);
+  const formatted = clean.querySelector('strong, em, code, ul, ol');
+  const note = noteEditor.innerHTML === originalNote.html
+    ? {text: originalNote.text, body_format: originalNote.body_format}
+    : {text: formatted ? clean.innerHTML : plain, body_format: formatted ? 'rich' : 'plain'};
+  if (!plain || Array.from(note.text).length > 50000) {
+    noteError(plain ? 'La note dépasse la limite de 50 000 caractères.' : 'Saisissez le texte de la note.');
+    noteEditor.focus();
+    return null;
+  }
+  return note;
+}
+
+function inNote(selection) {
+  return selection.rangeCount && noteEditor.contains(selection.anchorNode) && noteEditor.contains(selection.focusNode);
+}
+
+function noteToolActive(command) {
+  return command === 'fontName'
+    ? document.queryCommandValue(command) === 'monospace'
+    : document.queryCommandState(command);
+}
+
+function refreshNoteTools() {
+  const selected = inNote(window.getSelection());
+  for (const button of noteTools) {
+    const command = button.dataset.noteCommand;
+    if (button.hasAttribute('aria-pressed')) {
+      button.setAttribute('aria-pressed', String(Boolean(selected && noteToolActive(command))));
+    } else {
+      button.disabled = !noteSelection || !document.queryCommandEnabled(command);
+    }
+  }
+}
+
+document.addEventListener('selectionchange', () => {
+  const selection = window.getSelection();
+  if (inNote(selection)) {
+    noteSelection = selection.getRangeAt(0).cloneRange();
+    refreshNoteTools();
+  }
+});
+
+for (const button of noteTools) {
+  button.onmousedown = event => event.preventDefault();
+  button.onclick = () => {
+    const selection = window.getSelection();
+    if (document.activeElement !== noteEditor || !inNote(selection)) {
+      const range = inNote(selection) ? selection.getRangeAt(0).cloneRange() : noteSelection;
+      noteEditor.focus();
+      if (range && noteEditor.contains(range.commonAncestorContainer)) {
+        selection.removeAllRanges();
+        selection.addRange(range);
+      }
+    }
+    const command = button.dataset.noteCommand;
+    const font = command === 'fontName' ? (noteToolActive(command) ? 'Biome Sans' : 'monospace') : null;
+    // Chromium's editing commands keep toolbar actions in the same undo history as typing.
+    document.execCommand(command, false, font);
+    refreshNoteTools();
+  };
+}
+
+const noteEditorFrame = q('.note-editor');
+noteEditorFrame.addEventListener('input', () => {
+  noteError('');
+  refreshNoteTools();
+});
+noteEditorFrame.addEventListener('paste', event => {
+  if (event.target !== noteEditor) return;
+  event.preventDefault();
+  document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+});
+noteEditorFrame.addEventListener('drop', event => event.preventDefault());
+
+let guideGeneration = 0;
+let nextStepBase;
+let pinDraft;
+
+function guideFeedback(id, text) {
+  const area = q(id);
+  area.textContent = text;
+  area.hidden = !text;
+}
+
+function resetProjectGuide() {
+  guideGeneration++;
+  q('#project-guide').inert = true;
+  for (const id of ['#next-step', '#pin']) {
+    q(id + '-form').hidden = true;
+    q(id + '-save').disabled = false;
+    guideFeedback(id + '-feedback', '');
+  }
+  for (const card of q('#project-guide').querySelectorAll('.guide-card')) card.inert = false;
+  q('#next-step-edit').hidden = false;
+  q('#next-step-value').textContent = '';
+  q('#guide-project-status').textContent = '';
+  q('#pinned-notes').replaceChildren();
+}
+
+function renderProjectGuide() {
+  const status = data.project.status.value;
+  q('#guide-project-status').textContent = statusNames[status] || status;
+  q('#guide-project-status').dataset.status = status;
+  const step = data.project.framing?.next_step;
+  q('#next-step-value').textContent = step || 'Aucune prochaine étape définie.';
+  q('#next-step-value').classList.toggle('muted', !step);
+  q('#next-step-edit').textContent = step ? 'Modifier l’étape' : 'Définir une étape';
+  renderPinnedNotes();
+}
+
+function closeNextStep() {
+  q('#next-step-form').hidden = true;
+  q('#next-step-edit').hidden = false;
+  q('#next-step-edit').focus();
+}
+
+q('#next-step-edit').onclick = () => {
+  nextStepBase = data.project.framing?.next_step || '';
+  q('#next-step-text').value = nextStepBase;
+  guideFeedback('#next-step-feedback', '');
+  q('#next-step-edit').hidden = true;
+  q('#next-step-form').hidden = false;
+  q('#next-step-text').focus();
+};
+q('#next-step-cancel').onclick = () => {
+  guideFeedback('#next-step-feedback', '');
+  closeNextStep();
+};
+
+async function saveGuideChange(button, route, payload, feedback, onSaved) {
+  const generation = guideGeneration;
+  const key = projectKey;
+  const stillCurrent = () => guideGeneration === generation && projectKey === key;
+  const card = button.closest('.guide-card');
+  card.inert = true;
+  button.disabled = true;
+  guideFeedback(feedback, '');
+  try {
+    const result = await conservationPost(api(route), payload);
+    if (stillCurrent()) {
+      card.inert = false;
+      onSaved(result);
+    }
+  } catch (error) {
+    if (stillCurrent()) guideFeedback(feedback, error.message);
+  } finally {
+    if (stillCurrent()) {
+      card.inert = false;
+      button.disabled = false;
+    }
+  }
+}
+
+q('#next-step-form').onsubmit = event => {
+  event.preventDefault();
+  if (q('#next-step-save').disabled) return;
+  saveGuideChange(q('#next-step-save'), '/api/next-step', {
+    base_next_step: nextStepBase,
+    next_step: q('#next-step-text').value,
+  }, '#next-step-feedback', result => {
+    data.project.framing = result.framing;
+    renderFraming();
+    renderProjectGuide();
+    closeNextStep();
+    guideFeedback('#next-step-feedback', 'Cadrage mis à jour.');
+  });
+};
+
+function openPin(note) {
+  if (q('#pin-save').disabled) return;
+  pinDraft = note || {id: crypto.randomUUID(), revision: null, text: ''};
+  q('#pin-text').value = pinDraft.text;
+  guideFeedback('#pin-feedback', '');
+  q('#pin-form').hidden = false;
+  q('#pin-text').focus();
+}
+
+function closePin() {
+  q('#pin-form').hidden = true;
+  q('#pin-add').focus();
+}
+
+function renderPinnedNotes() {
+  const box = q('#pinned-notes');
+  box.replaceChildren();
+  if (!data.pinned_notes?.length) {
+    const empty = document.createElement('p');
+    empty.className = 'muted';
+    empty.textContent = 'Gardez ici les informations à retrouver en rouvrant le projet.';
+    box.append(empty);
+    return;
+  }
+  for (const note of data.pinned_notes) {
+    const card = document.createElement('article');
+    card.className = 'pinned-note';
+    const text = document.createElement('p');
+    text.className = 'guide-text';
+    text.textContent = note.text;
+    const actions = document.createElement('div');
+    actions.className = 'row';
+    const edit = document.createElement('button');
+    edit.type = 'button';
+    edit.textContent = 'Modifier';
+    edit.onclick = () => openPin(note);
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = 'Retirer…';
+    remove.onclick = () => {
+      const dialog = q('#pin-remove-dialog');
+      dialog.returnValue = '';
+      dialog.showModal();
+      dialog.onclose = () => {
+        if (dialog.returnValue !== 'remove') return;
+        saveGuideChange(remove, '/api/pinned-note', {id: note.id, revision: note.revision, remove: true}, '#pin-feedback', notes => {
+          data.pinned_notes = notes;
+          renderPinnedNotes();
+          if (pinDraft?.id === note.id && !q('#pin-form').hidden) closePin();
+          else q('#pin-add').focus();
+          guideFeedback('#pin-feedback', 'Note retirée.');
+        });
+      };
+    };
+    actions.append(edit, remove);
+    card.append(text, actions);
+    box.append(card);
+  }
+}
+
+q('#pin-add').onclick = () => openPin();
+q('#pin-cancel').onclick = () => {
+  guideFeedback('#pin-feedback', '');
+  closePin();
+};
+q('#pin-form').onsubmit = event => {
+  event.preventDefault();
+  if (q('#pin-save').disabled) return;
+  saveGuideChange(q('#pin-save'), '/api/pinned-note', {
+    id: pinDraft.id,
+    revision: pinDraft.revision,
+    text: q('#pin-text').value,
+  }, '#pin-feedback', notes => {
+    data.pinned_notes = notes;
+    renderPinnedNotes();
+    closePin();
+    guideFeedback('#pin-feedback', 'Note épinglée.');
+  });
+};
+
 /* Context help and action descriptions are local and do not change application state. */
 (() => {
   'use strict';
@@ -38,7 +481,7 @@
     'manual-time-cancel': 'Fermer la saisie autonome sans enregistrer la durée.',
     'compose': 'Ajouter une note, un essai, une réunion, un échange ou une décision au cahier.',
     'import-open': 'Préparer une entrée à partir d’un message Outlook, d’un email ou d’un texte.',
-    'clear-search': 'Effacer la recherche et le filtre de type pour afficher tout le cahier.',
+    'clear-search': 'Effacer la recherche et les filtres pour afficher tout le cahier.',
     'import-preview': 'Lire le message sélectionné et préparer une entrée à relire avant enregistrement.',
     'import-cancel': 'Fermer la préparation de l’échange sans l’ajouter au cahier.',
     'conflict-reload': 'Reprendre la version enregistrée sur disque ; votre variante reste conservée dans les fichiers de conflit.',
@@ -102,9 +545,9 @@
     projects: {title:'Retrouver et commencer un projet', intro:'Le catalogue rassemble vos dossiers documentaires. Les filtres changent la liste affichée ; les indicateurs comptent toujours le catalogue complet.', actions:[['Nouveau projet','Renseignez un titre, un contact et la demande. Le projet sera créé « À cadrer », puis ouvert dans le cahier.'],['Recherche + statut','Cherchez dans le titre, le contact ou le groupe, puis combinez avec un statut. Effacez la recherche pour élargir les résultats.'],['Titre d’un projet','Ouvre son cahier. Les fichiers et les livraisons sont accessibles dans les onglets du projet.']],note:'Actualiser relit les dossiers du catalogue. Les indicateurs « En cours » et « En validation » correspondent aux statuts enregistrés, pas à un calcul automatique d’avancement.'},
     accounting:{title:'Temps autonome et participation au bilan',intro:'Les durées s’ajoutent à celles du cahier. Le périmètre du bilan est un choix indépendant : exclure un projet ne supprime aucune saisie.',actions:[['Exclure ce projet','Cochez puis enregistrez pour le retirer de tous les bilans et exports, pour toutes les périodes. Décochez et enregistrez pour le réintégrer.'],['Saisir du temps','Choisissez une date et une durée sans créer de note. Une estimation historique peut cumuler plusieurs journées ; la date choisie détermine sa place dans le bilan.'],['Corriger / retirer','Modifiez les durées autonomes depuis leur tableau. Pour une durée liée à une note, utilisez Voir l’entrée. L’historique des corrections reste conservé.']],note:'Ne ressaisissez pas un total qui inclut déjà les séances du cahier. Une durée absente reste inconnue ; un zéro saisi est une donnée explicite. Les estimations restent identifiables dans les bilans.'},
     create:{title:'Créer le dossier du projet',intro:'Trois informations suffisent pour commencer : titre, contact et demande initiale. Le cadrage pourra être complété ensuite.',actions:[['Importer une demande','Les champs explicitement nommés d’un message peuvent préremplir les champs vides. Vérifiez toujours les valeurs proposées.'],['Dossier des originaux','Lie l’emplacement des images sans les copier. Ce choix peut attendre si les images ne sont pas encore disponibles.'],['Créer et ouvrir','Crée le dossier documentaire et conserve la demande dans le nouveau cahier.']],note:'L’email et le groupe sont facultatifs. Un mail libre ne permet pas de déduire automatiquement toutes les coordonnées.'},
-    notebook:{title:'Tenir le cahier du projet',intro:'Chaque entrée conserve un événement de travail : note, essai, réunion, échange ou décision, avec sa date et ses fichiers éventuels.',actions:[['Ajouter une entrée','Choisissez le type, saisissez le texte et, si utile, le temps humain en minutes. L’enregistrement se fait dans le dossier du projet.'],['Importer un échange','Prépare une entrée à partir d’un message ou d’un texte. Relisez le contenu avant de l’enregistrer.'],['Rechercher / filtrer','Affiche les entrées correspondant au texte et au type choisis. « Effacer » rétablit le cahier complet.']],note:'Les minutes renseignées alimentent le bilan à la date de la séance. Une durée vide signifie « non renseignée », et non zéro minute.'},
+    notebook:{title:'Tenir le cahier du projet',intro:'Retrouvez les événements passés dans le cahier et ce qu’il reste à faire dans les repères du projet.',actions:[['Ajouter une entrée','Notez un événement daté avec, si utile, sa durée en heures et minutes.'],['Importer un échange','Prépare une entrée à partir d’un message ou d’un texte. Relisez le contenu avant de l’enregistrer.'],['Filtrer par tag','Cliquez sur une pastille pour retrouver les entrées qui portent ce tag. « Effacer » remet à zéro la recherche et les filtres.'],['Prochaine étape et notes épinglées','La prochaine étape reprend le champ du cadrage. Épinglez les informations à garder sous les yeux quand vous revenez sur le projet.']],note:'Les durées renseignées alimentent le bilan à la date de la séance. Laissez les deux champs vides si la durée est inconnue.'},
     exchange:{title:'Conserver un échange dans le cahier',intro:'Importez un message Outlook, un email ou un texte pour préparer une entrée relisible et datée.',actions:[['Choisir le message','Sélectionnez le fichier ou collez le texte reçu.'],['Préparer l’entrée','Lit le contenu et le place dans l’éditeur, pour vérifier le texte, le type et la date.'],['Enregistrer ensuite','La préparation seule ne crée pas d’entrée. Relisez et enregistrez depuis l’éditeur du cahier.']],note:'Le message original peut contenir des informations personnelles. Vérifiez le texte et les pièces jointes avant de les conserver dans le projet.'},
-    entry:{title:'Enregistrer une entrée du cahier',intro:'Cette entrée décrit un événement précis. Sa date détermine la période à laquelle le temps de travail est comptabilisé.',actions:[['Type, date et texte','Décrivez ce qui a été fait ou décidé. Les tags permettent de retrouver l’entrée ensuite.'],['Minutes','Saisissez le temps humain estimé. Laissez vide si la durée est inconnue ; le temps de calcul n’est pas du temps humain.'],['Pièces jointes','Les fichiers sélectionnés seront copiés dans le dossier documentaire lors de l’enregistrement.']],note:'Enregistrer conserve le texte et les métadonnées. Lors d’une correction, une version devenue obsolète est signalée pour comparaison, au lieu d’écraser silencieusement une autre modification.'},
+    entry:{title:'Enregistrer une entrée du cahier',intro:'Cette entrée décrit un événement précis. Sa date détermine la période à laquelle le temps de travail est comptabilisé.',actions:[['Mettre en forme','Utilisez la barre au-dessus de la note. La mise en forme s’affiche directement pendant la saisie.'],['Heures et minutes','Saisissez le temps humain estimé. Laissez les deux champs vides si la durée est inconnue.'],['Tags et pièces jointes','Séparez les tags par des virgules. Les fichiers sélectionnés seront copiés dans le dossier documentaire lors de l’enregistrement.']],note:'Enregistrer conserve le texte et les métadonnées. Si la note a changé depuis son ouverture, BIOME présente les deux versions pour comparaison.'},
     files:{title:'Distinguer fichiers et données',intro:'Une pièce jointe est conservée dans le projet. Une référence indique où trouver des données externes, sans en copier le contenu.',actions:[['Dossier de données','Crée ou lie le dossier séparé contenant les images du projet. Lier un dossier ne le déplace pas.'],['Recevoir les originaux','Prépare une copie des fichiers reçus. Vérifiez source, destination et volume avant de copier ; les sources restent intactes.'],['Ajouter des données','Enregistre une référence et sa catégorie. Pour conserver une copie, utilisez la réception ou une pièce jointe du cahier.']],note:'La sauvegarde du catalogue inclut les fichiers internes. Les données conservées sur un autre stockage doivent être sauvegardées séparément.'},
     receive:{title:'Préparer une copie vérifiée',intro:'La réception conserve les originaux sur le stockage choisi, avec un reçu permettant de retrouver les fichiers copiés.',actions:[['Source','Sélectionnez le fichier ou dossier reçu. La source n’est pas supprimée.'],['Destination','Choisissez l’emplacement durable. « Préparer la réception » affiche le nombre de fichiers et le volume à copier.'],['Copier et conserver','Lance la copie puis vérifie les empreintes. Attendez le résultat avant de considérer les données comme reçues.']],note:'Une référence externe n’est pas une copie de sécurité. Les originaux qui restent hors du catalogue demandent une sauvegarde distincte.'},
     dataset:{title:'Ajouter une référence externe',intro:'Cette fiche décrit un emplacement ; elle ne transfère pas les données dans BIOME.',actions:[['Fichier ou dossier','Choisissez un emplacement accessible depuis cet ordinateur.'],['Libellé et catégorie','Expliquez le rôle des données pour les retrouver dans le tableau.'],['Enregistrer','Conserve la référence dans le projet. Les fichiers sources restent à leur emplacement actuel.']],note:'Sur un stockage réseau, l’accès peut dépendre du VPN et des droits. Une référence enregistrée ne garantit pas que le stockage sera disponible plus tard.'},

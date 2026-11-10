@@ -59,6 +59,7 @@ def read_project(root):
     if len({x['id'] for x in logs}) != len(logs): raise ValueError('Temps dupliqués')
     linked={file['id'] for entry in entries for file in entry.get('attachments',[])}
     return {'project': load(root/'biome.json'), 'entries': entries, 'logs': logs,
+            'pinned_notes': pinned_notes(root),
             'unlinked_files':[file for file in load(root/'records/versions.json') if file['id'] not in linked],
             'datasets':[dict(item,resolved_location=str(dataset_path(root,item)) if item.get('storage')=='project' else item['location']) for item in load(root/'records/datasets.json')],
             'dates':date_metadata(root,load(root/'biome.json')),'data_folder':folder_info(root),'next_delivery':delivery_title(root),'delivery_files':delivery_files(root),'deliveries':load(root/'records/deliveries.json') if (root/'records/deliveries.json').exists() else [],
@@ -276,6 +277,24 @@ def add_dataset(root,data):
     write_companion(root,records)
     return item
 
+class NoteMarkup(HTMLParser):
+    """Accept only the formatting written by the notebook editor."""
+
+    tags = {'strong', 'em', 'code', 'div', 'p', 'br', 'ul', 'ol', 'li'}
+    numeric_attributes = {'ol': 'start', 'li': 'value'}
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in self.tags or any(
+            key != self.numeric_attributes.get(tag) or not re.fullmatch(r'-?[0-9]{1,10}', value or '')
+            for key, value in attrs
+        ):
+            raise ValueError('Mise en forme de note invalide')
+
+    def handle_endtag(self, tag):
+        if tag not in self.tags:
+            raise ValueError('Mise en forme de note invalide')
+
+
 def add_entry(root, data):
     load(root/'biome.json')
     text = data.get('text', '').strip()
@@ -306,6 +325,17 @@ def add_entry(root, data):
             'file':relative,'tags':tags,'linked_file_ids':[], 'created_at':datetime.now().astimezone().isoformat()}
     if existing:
         item={**existing,**item,'created_at':existing.get('created_at'),'edited_at':datetime.now().astimezone().isoformat()}
+    if 'body_format' in data:
+        if data['body_format'] not in ['plain', 'markdown', 'rich']:
+            raise ValueError('Format de note invalide')
+        if data['body_format'] != 'plain':
+            item['body_format'] = data['body_format']
+        else:
+            item.pop('body_format', None)
+    if item.get('body_format') == 'rich':
+        markup = NoteMarkup()
+        markup.feed(text)
+        markup.close()
     attached=[]
     uploads=data.get('attachments',[])
     if not isinstance(uploads,list) or len(uploads)>MAX_ENTRY_FILES: raise ValueError('Maximum 100 fichiers')
@@ -437,6 +467,10 @@ def recover_project_info(root):
     pending.unlink()
 
 def update_framing(root,data):
+    project=load(root/'biome.json')
+    current=project.get('framing',{})
+    if 'base_next_step' in data and data['base_next_step'] != current.get('next_step',''):
+        raise ValueError('La prochaine étape a changé depuis l’ouverture du formulaire. Copiez vos modifications puis rouvrez le cadrage.')
     status=data.get('status')
     if status not in ['Intake','Active','Review','Completed','OnHold','Unknown']: raise ValueError('Statut invalide')
     fields={}
@@ -448,15 +482,32 @@ def update_framing(root,data):
     if activity not in ['','consulting','training','development','analysis']: raise ValueError('Type d’intervention invalide')
     fields['activity_type']=activity
     for key in ['software','modalities','topics']:
-        values=data.get(key,load(root/'biome.json').get('framing',{}).get(key,[]))
+        values=data.get(key,current.get(key,[]))
         if not isinstance(values,list) or len(values)>20 or any(not isinstance(v,str) or not v.strip() or len(v)>100 for v in values): raise ValueError('Catégories invalides, maximum 20 valeurs par liste')
         fields[key]=list(dict.fromkeys(v.strip() for v in values))
+    return write_framing(root,project,fields,status)
+
+def update_next_step(root,data):
     project=load(root/'biome.json')
-    if project.get('framing',{})==fields and project['status']['value']==status: return project
+    fields=project.get('framing',{})
+    current=fields.get('next_step','')
+    value=data.get('next_step')
+    if not isinstance(value,str) or len(value)>2000:
+        raise ValueError('Texte attendu, maximum 2000 caractères')
+    value=value.strip()
+    if value==current:
+        return project
+    if data.get('base_next_step')!=current:
+        raise ValueError('La prochaine étape a changé. Copiez votre texte puis actualisez le projet.')
+    return write_framing(root,project,{**fields,'next_step':value})
+
+def write_framing(root,project,fields,status=None):
+    if project.get('framing',{})==fields and status in (None,project['status']['value']): return project
     updated=dict(project);stamp=datetime.now().astimezone().isoformat()
     updated.update(framing=fields,updated_at=stamp)
-    updated['status']={**project.get('status',{}),'value':status,'updated_at':stamp}
-    if project['status']['value']!=status: updated['status'].pop('source',None)
+    if status is not None:
+        updated['status']={**project['status'],'value':status,'updated_at':stamp}
+        if project['status']['value']!=status: updated['status'].pop('source',None)
     record={'id':'framing-'+uuid.uuid4().hex,'date':stamp,'previous':project,'updated':updated}
     write_json(root/'records/pending-framing.json',record)
     recover_framing(root)
@@ -471,11 +522,46 @@ def recover_framing(root):
     framing=project['framing']
     lines=['# Project framing','','Status: '+project['status']['value'],'','Updated: '+record['date'],'']
     for key,label in [('objective','Agreed objective'),('deliverable','Agreed deliverable'),('next_step','Next step'),('validation','Validation / acceptance'),('activity_type','Activity type')]:
-        lines+=['## '+label,'',framing[key] or 'Not specified','']
+        lines+=['## '+label,'',framing.get(key) or 'Not specified','']
     for key,label in [('software','Software'),('modalities','Imaging modalities'),('topics','Analysis topics')]:
         lines+=['## '+label,'',', '.join(framing.get(key,[])) or 'Not specified','']
     atomic(root/'records/framing.md','\n'.join(lines))
     pending.unlink()
+
+def pinned_notes(root):
+    path=root/'records/pinned-notes.json'
+    return load(path) if path.exists() else []
+
+def save_pinned_note(root,data):
+    identifier=data.get('id')
+    if not isinstance(identifier,str) or not re.fullmatch(r'[0-9a-f-]{36}',identifier):
+        raise ValueError('Identifiant de note épinglée invalide')
+    notes=pinned_notes(root)
+    index=next((index for index,note in enumerate(notes) if note['id']==identifier),len(notes))
+    existing=notes[index] if index<len(notes) else None
+    base=data.get('revision')
+    if data.get('remove') is True:
+        if existing is None:
+            return notes
+        if base!=existing['revision']:
+            raise ValueError('Cette note épinglée a changé. Actualisez le projet.')
+        notes.pop(index)
+    else:
+        value=data.get('text')
+        if not isinstance(value,str) or not value.strip() or len(value)>2000:
+            raise ValueError('Saisissez une note de 1 à 2000 caractères')
+        value=value.strip()
+        if existing and existing['text']==value:
+            return notes
+        if base!=(existing['revision'] if existing else None):
+            raise ValueError('Cette note épinglée a changé. Copiez votre texte puis actualisez le projet.')
+        note={'id':identifier,'text':value,'revision':uuid.uuid4().hex}
+        if existing:
+            notes[index]=note
+        else:
+            notes.append(note)
+    write_json(root/'records/pinned-notes.json',notes)
+    return notes
 
 def directory(initial):
     recover_directory(initial)
